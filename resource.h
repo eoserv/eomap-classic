@@ -1,0 +1,146 @@
+#ifndef IDC_STATIC
+#define IDC_STATIC (-1)
+#endif
+
+#define MENU_BASE 100
+
+#define   MENU_FILE_NEW               110
+#define   MENU_FILE_OPEN              111
+#define   MENU_FILE_SAVE              112
+#define   MENU_FILE_SAVE_AS           113
+#define   MENU_FILE_SELECT_EO_INSTALL 114
+#define   MENU_FILE_EXIT              115
+
+#define   MENU_MAP_CLEAR         120
+#define   MENU_MAP_PROPERTIES    122
+
+#define   MENU_EDIT_UNDO         130
+#define   MENU_EDIT_REDO         131
+
+#define   MENU_UPLOAD_UPDATE_MAP 140
+#define   MENU_UPLOAD_SETTINGS   141
+
+#define   MENU_LAYERS_GROUND      150
+#define   MENU_LAYERS_OBJECTS     151
+#define   MENU_LAYERS_OVERLAY     152
+#define   MENU_LAYERS_DOWN_WALL   153
+#define   MENU_LAYERS_RIGHT_WALL  154
+#define   MENU_LAYERS_ROOF        155
+#define   MENU_LAYERS_TOP         156
+#define   MENU_LAYERS_SHADOW      157
+#define   MENU_LAYERS_OVERLAY2    158
+#define   MENU_LAYERS_SPAWNS      159
+#define   MENU_LAYERS_SPECIAL     160
+#define   MENU_LAYERS_GRID_LINES  161
+
+#define   MENU_HELP_ABOUT        170
+
+
+#define DIALOG_NEW_MAP                200
+#define   DIALOG_NEW_MAP_OK           201
+#define   DIALOG_NEW_MAP_CANCEL       202
+#define   DIALOG_NEW_MAP_NAME_LABEL   203
+#define     DIALOG_NEW_MAP_NAME       204
+#define   DIALOG_NEW_MAP_WIDTH_LABEL  205
+#define     DIALOG_NEW_MAP_WIDTH      206
+#define   DIALOG_NEW_MAP_HEIGHT_LABEL 207
+#define     DIALOG_NEW_MAP_HEIGHT     208
+
+
+#define DIALOG_MAP_PROPERTIES                         300
+#define   DIALOG_MAP_PROPERTIES_TYPE_LABEL            301
+#define     DIALOG_MAP_PROPERTIES_TYPE                302
+#define   DIALOG_MAP_PROPERTIES_EFFECT_LABEL          303
+#define     DIALOG_MAP_PROPERTIES_EFFECT              304
+#define   DIALOG_MAP_PROPERTIES_MINIMAP               305
+#define   DIALOG_MAP_PROPERTIES_TELEPORT              306
+#define   DIALOG_MAP_PROPERTIES_RESET_GROUP           307
+#define     DIALOG_MAP_PROPERTIES_RESET_X_LABEL       308
+#define       DIALOG_MAP_PROPERTIES_RESET_X           309
+#define     DIALOG_MAP_PROPERTIES_RESET_Y_LABEL       310
+#define       DIALOG_MAP_PROPERTIES_RESET_Y           311
+#define   DIALOG_MAP_PROPERTIES_MUSIC_GROUP           312
+#define     DIALOG_MAP_PROPERTIES_MUSIC_TRACK_LABEL   313
+#define       DIALOG_MAP_PROPERTIES_MUSIC_TRACK       314
+#define     DIALOG_MAP_PROPERTIES_MUSIC_CONTROL_LABEL 315
+#define       DIALOG_MAP_PROPERTIES_MUSIC_CONTROL     316
+#define     DIALOG_MAP_PROPERTIES_MUSIC_AMBIENT_LABEL 317
+#define       DIALOG_MAP_PROPERTIES_MUSIC_AMBIENT     318
+#define   DIALOG_MAP_PROPERTIES_WIDTH_LABEL           319
+#define     DIALOG_MAP_PROPERTIES_WIDTH               320
+#define   DIALOG_MAP_PROPERTIES_HEIGHT_LABEL          321
+#define     DIALOG_MAP_PROPERTIES_HEIGHT              322
+#define   DIALOG_MAP_PROPERTIES_NAME_LABEL            323
+#define     DIALOG_MAP_PROPERTIES_NAME                324
+#define   DIALOG_MAP_PROPERTIES_OK                    325
+#define   DIALOG_MAP_PROPERTIES_CANCEL                326
+
+
+#define DIALOG_ABOUT         400
+#define   DIALOG_ABOUT_TEXT  401
+#define   DIALOG_ABOUT_CLOSE 402
+
+
+#define DIALOG_EDIT_WARP                 500
+#define   DIALOG_EDIT_WARP_OK            501
+#define   DIALOG_EDIT_WARP_CANCEL        502
+#define   DIALOG_EDIT_WARP_X             503
+#define     DIALOG_EDIT_WARP_X_LABEL     504
+#define   DIALOG_EDIT_WARP_Y             505
+#define     DIALOG_EDIT_WARP_Y_LABEL     506
+#define   DIALOG_EDIT_WARP_MAP           507
+#define     DIALOG_EDIT_WARP_MAP_LABEL   508
+#define   DIALOG_EDIT_WARP_LEVEL         509
+#define     DIALOG_EDIT_WARP_LEVEL_LABEL 510
+#define   DIALOG_EDIT_WARP_DOOR          511
+#define   DIALOG_EDIT_WARP_KEY           512
+#define     DIALOG_EDIT_WARP_KEY_LABEL   513
+
+#define DIALOG_ITEM_SPAWN_LIST                  600
+#define   DIALOG_ITEM_SPAWN_LIST_SAVE           601
+#define   DIALOG_ITEM_SPAWN_LIST_ADD            602
+#define   DIALOG_ITEM_SPAWN_LIST_DELETE         603
+#define   DIALOG_ITEM_SPAWN_LIST_ITEMS          604
+#define   DIALOG_ITEM_SPAWN_LIST_EDIT           605
+
+#define DIALOG_EDIT_ITEM_SPAWN                  700
+#define   DIALOG_EDIT_ITEM_SPAWN_OK             701
+#define   DIALOG_EDIT_ITEM_SPAWN_CANCEL         702
+#define   DIALOG_EDIT_ITEM_SPAWN_ID             703
+#define     DIALOG_EDIT_ITEM_SPAWN_ID_LABEL     704
+#define   DIALOG_EDIT_ITEM_SPAWN_AMOUNT         705
+#define     DIALOG_EDIT_ITEM_SPAWN_AMOUNT_LABEL 706
+#define   DIALOG_EDIT_ITEM_SPAWN_KEY            707
+#define     DIALOG_EDIT_ITEM_SPAWN_KEY_LABEL    708
+#define   DIALOG_EDIT_ITEM_SPAWN_TIME           709
+#define     DIALOG_EDIT_ITEM_SPAWN_TIME_LABEL   710
+#define   DIALOG_EDIT_ITEM_SPAWN_SLOT           711
+#define     DIALOG_EDIT_ITEM_SPAWN_SLOT_LABEL   712
+
+#define DIALOG_NPC_SPAWN_LIST                  800
+#define   DIALOG_NPC_SPAWN_LIST_SAVE           801
+#define   DIALOG_NPC_SPAWN_LIST_ADD            802
+#define   DIALOG_NPC_SPAWN_LIST_DELETE         803
+#define   DIALOG_NPC_SPAWN_LIST_NPCS           804
+#define   DIALOG_NPC_SPAWN_LIST_EDIT           805
+
+#define DIALOG_EDIT_NPC_SPAWN                   900
+#define   DIALOG_EDIT_NPC_SPAWN_OK              901
+#define   DIALOG_EDIT_NPC_SPAWN_CANCEL          902
+#define   DIALOG_EDIT_NPC_SPAWN_ID              903
+#define     DIALOG_EDIT_NPC_SPAWN_ID_LABEL      904
+#define   DIALOG_EDIT_NPC_SPAWN_SPEED           905
+#define     DIALOG_EDIT_NPC_SPAWN_SPEED_LABEL   906
+#define   DIALOG_EDIT_NPC_SPAWN_RESPAWN         907
+#define     DIALOG_EDIT_NPC_SPAWN_RESPAWN_LABEL 908
+#define   DIALOG_EDIT_NPC_SPAWN_AMOUNT          909
+#define     DIALOG_EDIT_NPC_SPAWN_AMOUNT_LABEL  910
+
+#define DIALOG_EDIT_SIGN                   1000
+#define   DIALOG_EDIT_SIGN_OK              1001
+#define   DIALOG_EDIT_SIGN_CANCEL          1002
+#define   DIALOG_EDIT_SIGN_TITLE           1003
+#define     DIALOG_EDIT_SIGN_TITLE_LABEL   1004
+#define   DIALOG_EDIT_SIGN_MESSAGE         1005
+#define     DIALOG_EDIT_SIGN_MESSAGE_LABEL 1006
+
