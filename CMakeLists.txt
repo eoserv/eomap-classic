@@ -56,6 +56,8 @@ target_link_libraries(a5ses PUBLIC
 	PkgConfig::PHYSFS_STATIC
 )
 
+target_compile_definitions(a5ses PUBLIC A5SES_INT_COORD)
+
 target_include_directories(a5ses PUBLIC a5ses/include)
 target_include_directories(a5ses PRIVATE a5ses/include/a5ses)
 
@@ -90,7 +92,6 @@ add_executable(eomap4
 	${BUILTIN_DATA_SRCFILE}
 )
 
-target_compile_definitions(eomap4 PRIVATE EOMAP_WINDERS EOMAP_ACCEL)
 target_compile_options(eomap4 PRIVATE -fwrapv)
 target_link_libraries(eomap4 PRIVATE a5ses)
 

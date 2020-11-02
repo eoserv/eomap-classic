@@ -121,7 +121,81 @@ void dib_reader::start()
 	convert_table_init = true;
 }
 
-void dib_reader::read_line(char* outbuf, int row)
+void dib_reader::read_line_argb(char* outbuf, int row)
+{
+	int line = ((height() < 0) ? row : height() - 1 - row);
+
+	const char *linebuf = data() + stride() * line;
+
+	uint32_t(*read_fn)(const char* data, size_t offset) = nullptr;
+
+	if (bpp() == 1)
+	{
+		read_fn = [](const char* data, size_t offset) -> uint32_t
+		{
+			return data[offset];
+		};
+	}
+	else if (bpp() == 2)
+	{
+		read_fn = [](const char* data, size_t offset) -> uint32_t
+		{
+			char a = data[offset];
+			char b = data[offset + 1];
+
+			return int_pack_16_le(a, b);
+		};
+	}
+	else if (bpp() == 3)
+	{
+		read_fn = [](const char* data, size_t offset) -> uint32_t
+		{
+			char a = data[offset];
+			char b = data[offset + 1];
+			char c = data[offset + 2];
+
+			return int_pack_32_le(a, b, c, 0);
+		};
+	}
+	else if (bpp() == 4)
+	{
+		read_fn = [](const char* data, size_t offset) -> uint32_t
+		{
+			char a = data[offset];
+			char b = data[offset + 1];
+			char c = data[offset + 2];
+			char d = data[offset + 3];
+
+			return int_pack_32_le(a, b, c, d);
+		};
+	}
+
+	for (int i = 0; i < width(); i++)
+	{
+		size_t pixel_offset = linebuf - data_ptr;
+		uint32_t pixel;
+
+		if (pixel_offset < data_size + bpp())
+			pixel = read_fn(data_ptr, pixel_offset);
+		else
+			pixel = 0;
+
+		char r = char(rtable[((pixel >> rs) & rm)]);
+		char g = char(gtable[((pixel >> gs) & gm)]);
+		char b = char(btable[((pixel >> bs) & bm)]);
+		char a = char(((r|g|b) != 0) * 0xFF);
+
+		outbuf[0] = b;
+		outbuf[1] = g;
+		outbuf[2] = r;
+		outbuf[3] = a;
+
+		linebuf += bpp();
+		outbuf += 4;
+	}
+}
+
+void dib_reader::read_line_abgr(char* outbuf, int row)
 {
 	int line = ((height() < 0) ? row : height() - 1 - row);
 

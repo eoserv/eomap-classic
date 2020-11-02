@@ -2,6 +2,8 @@
 #define COMMON_HPP_INCLUDED
 
 #include <algorithm>
+#include <deque>
+#include <functional>
 #include <list>
 #include <optional>
 #include <string>
@@ -15,7 +17,6 @@
 #include <cstdio>
 #include <cstring>
 
-#define A5SES_INT_COORD
 #define A5SES_IMAGE_ADDON
 #define A5SES_FONT_ADDON
 #include <a5ses/a5ses.hpp>

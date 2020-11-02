@@ -135,7 +135,7 @@ class Atlas
 
 		/// Allocates room for and copies an existing bitmap in to the atlas
 		/// @throw Atlas::Too_Big
-		std::unique_ptr<Bitmap> Add(Bitmap &bitmap);
+		std::unique_ptr<Bitmap> Add(Bitmap &bitmap, a5::Rectangle &rect);
 
 		/// Allocates an image to the atlas with the specified width/height
 		/// @throw Atlas::Not_Child

@@ -107,7 +107,10 @@ class dib_reader
 		void start();
 
 		// outbuf must be at least line_size() bytes
-		void read_line(char* outbuf, int row);
+		void read_line_argb(char* outbuf, int row);
+
+		// outbuf must be at least line_size() bytes
+		void read_line_abgr(char* outbuf, int row);
 };
 
 #endif // EOMAP_DIB_READER_HPP

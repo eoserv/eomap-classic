@@ -73,9 +73,7 @@ void Map_Renderer::Render()
 				int draw_x = xoff + (x << 5) - (y << 5);
 				int draw_y = yoff + (x << 4) + (y << 4);
 
-#ifdef EOMAP_ACCEL
 				if ((draw_x + gfx_w) >= 0 && (draw_y + gfx_h) >= 0 && draw_x < target_w && draw_y < target_h)
-#endif
 				{
 					this->target.Blit(gfx, draw_x, draw_y);
 
@@ -94,9 +92,7 @@ void Map_Renderer::Render()
 				int draw_x = xoff + (x << 5) - (y << 5);
 				int draw_y = yoff + (x << 4) + (y << 4);
 
-#ifdef EOMAP_ACCEL
 				if ((draw_x + base_gfx_w) >= 0 && (draw_y + base_gfx_h) >= 0 && draw_x < target_w && draw_y < target_h)
-#endif
 				{
 					this->target.Blit(base_gfx, draw_x, draw_y);
 				}
@@ -132,9 +128,7 @@ void Map_Renderer::Render()
 				int draw_x = (ii->x << 5) - (i->y << 5) - ((int(gfx_w) >> 1) - 32) - xoff;
 				int draw_y = (ii->x << 4) + (i->y << 4) - yoff;
 
-	#ifdef EOMAP_ACCEL
 				if ((draw_x + gfx_w) >= 0 && (draw_y + gfx_h) >= 0 && draw_x < target_w && draw_y < target_h)
-	#endif
 				{
 					this->target.BlitTinted(gfx, tint, draw_x, draw_y);
 				}
@@ -169,9 +163,7 @@ void Map_Renderer::Render()
 				int draw_x = xoff + (x << 5) - (y << 5) + 32;
 				int draw_y = yoff + (x << 4) + (y << 4) + 32;
 
-#ifdef EOMAP_ACCEL
 				if ((draw_x + gfx_w) >= 0 && (draw_y + gfx_h) >= 0 && draw_x < target_w && draw_y < target_h)
-#endif
 				{
 					this->target.BlitTinted(gfx, a5::RGBA(255, 255, 255, 50), draw_x, draw_y);
 
@@ -218,9 +210,7 @@ void Map_Renderer::Render()
 				int draw_x = (x << 5) - (y << 5) - ((int(gfx_w) >> 1) - 32) - xoff;
 				int draw_y = (x << 4) + (y << 4) - yoff;
 
-		#ifdef EOMAP_ACCEL
 				if ((draw_x + gfx_w) >= 0 && (draw_y + gfx_h) >= 0 && draw_x < target_w && draw_y < target_h)
-		#endif
 				{
 					this->target.BlitTinted(gfx, tint, draw_x, draw_y);
 				}
@@ -267,9 +257,7 @@ void Map_Renderer::Render()
 					draw_x -= tile_w / (1 + (i == 1)) - 32;
 					draw_y -= tile_h - 32;
 
-#ifdef EOMAP_ACCEL
 					if ((draw_x + gfx_w) >= 0 && (draw_y + gfx_h) >= 0 && draw_x < target_w && draw_y < target_h)
-#endif
 					{
 						if (i == 7)
 							this->target.BlitTinted(gfx, a5::RGBA(255, 255, 255, 50), draw_x, draw_y);
@@ -320,9 +308,7 @@ void Map_Renderer::Render()
 				int draw_x = xoff + (x << 5) - (y << 5) - ((int(gfx_w) >> 1) - 32);
 				int draw_y = yoff + (x << 4) + (y << 4) - ((int(gfx_h)) - 32);
 
-#ifdef EOMAP_ACCEL
 				if ((draw_x + gfx_w) >= 0 && (draw_y + gfx_h) >= 0 && draw_x < target_w && draw_y < target_h)
-#endif
 				{
 					this->target.Blit(gfx, draw_x, draw_y);
 
@@ -370,9 +356,7 @@ void Map_Renderer::Render()
 				int gfx_h = gfx.Height();				int draw_x = xoff + (x << 5) - (y << 5) - ((int(gfx_w) >> 1) - 32);
 				int draw_y = yoff + (x << 4) + (y << 4) - ((int(gfx_h)) - 32);
 
-#ifdef EOMAP_ACCEL
 				if ((draw_x + gfx_w) >= 0 && (draw_y + gfx_h) >= 0 && draw_x < target_w && draw_y < target_h)
-#endif
 				{
 					this->target.Blit(gfx, draw_x, draw_y);
 				}
@@ -408,9 +392,7 @@ void Map_Renderer::Render()
 				int draw_x = (ii->x << 5) - (i->y << 5) - ((int(gfx_w) >> 1) - 32) - xoff;
 				int draw_y = (ii->x << 4) + (i->y << 4) - yoff;
 
-	#ifdef EOMAP_ACCEL
 				if ((draw_x + gfx_w) >= 0 && (draw_y + gfx_h) >= 0 && draw_x < target_w && draw_y < target_h)
-	#endif
 				{
 					this->target.BlitTinted(gfx, tint, draw_x, draw_y);
 				}
@@ -446,9 +428,7 @@ void Map_Renderer::Render()
                 int draw_x = xoff1 + (x << 5) - (y << 5) - ((gfx_w >> 1) - 32);
                 int draw_y = yoff1 + (x << 4) + (y << 4) - (gfx_h - 32);
 
-	#ifdef EOMAP_ACCEL
                 if ((draw_x + gfx_w) >= 0 && (draw_y + gfx_h) >= 0 && draw_x < target_w && draw_y < target_h)
-	#endif
                 {
                     this->target.BlitTinted(gfx, a5::RGBA(255, 255, 255, 128), draw_x, draw_y);
                 }
@@ -484,9 +464,7 @@ void Map_Renderer::Render()
 			int draw_x = xoff1 + (x << 5) - (y << 5) - ((int(gfx_w) >> 1) - 32);
 			int draw_y = yoff1 + (x << 4) + (y << 4) - (int(gfx_h) - 32);
 
-	#ifdef EOMAP_ACCEL
             if ((draw_x + gfx_w) >= 0 && (draw_y + gfx_h) >= 0 && draw_x < target_w && draw_y < target_h)
-	#endif
             {
                 this->target.BlitTinted(gfx, a5::RGBA(255, 255, 255, 128), draw_x, draw_y);
             }
@@ -521,9 +499,7 @@ void Map_Renderer::Render()
 			int draw_x = xoff1 + (x << 5) - (y << 5) - ((gfx_w >> 1) - 32);
 			int draw_y = yoff1 + (x << 4) + (y << 4) - (gfx_h - 32);
 
-	#ifdef EOMAP_ACCEL
             if ((draw_x + gfx_w) >= 0 && (draw_y + gfx_h) >= 0 && draw_x < target_w && draw_y < target_h)
-	#endif
             {
                 this->target.BlitTinted(gfx, a5::RGBA(255, 255, 255, 128), draw_x, draw_y);
             }
@@ -558,9 +534,7 @@ void Map_Renderer::Render()
 			int draw_x = xoff1 + (x << 5) - (y << 5) - ((gfx_w >> 1) - 32);
 			int draw_y = yoff1 + (x << 4) + (y << 4) - (gfx_h - 32);
 
-	#ifdef EOMAP_ACCEL
             if ((draw_x + gfx_w) >= 0 && (draw_y + gfx_h) >= 0 && draw_x < target_w && draw_y < target_h)
-	#endif
             {
                 this->target.BlitTinted(gfx, a5::RGBA(255, 255, 255, 128), draw_x, draw_y);
             }

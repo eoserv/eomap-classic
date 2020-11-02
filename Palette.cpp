@@ -190,15 +190,15 @@ int Palette::RightClick(int x, int y)
 
 void Pal_Renderer::Render()
 {
-	this->target.Target();
+	int target_h = this->target.Height();
+
+	std::deque<std::function<void()>> drawcmd;
 
 	for (std::list<Palette::Tile>::iterator i = this->pal->tiles.begin(); i != this->pal->tiles.end(); ++i)
 	{
 		int draw_x = i->x;
 		int draw_y = i->y - yoff + 32;
-#ifdef EOMAP_ACCEL
-		if (draw_y + i->h >= 0 && draw_y < this->target.Height())
-#endif
+		if (draw_y + i->h >= 0 && draw_y < target_h)
 		{
 			a5::Bitmap& bmp = [&]() -> a5::Bitmap&
 			{
@@ -210,20 +210,31 @@ void Pal_Renderer::Render()
 
 			if (i->id == this->pal->selected_tile)
 			{
-				if (this->pal->layer == 7)
+				drawcmd.emplace_back([this, &bmp, draw_x, draw_y]()
 				{
-					this->target.BlitTinted(bmp, a5::RGBA(255, 255, 255, 160), draw_x, draw_y);
-				}
-				else
-				{
-					this->target.Blit(bmp, draw_x, draw_y);
-					this->target.BlitTinted(bmp, a5::RGBA(160, 160, 160, 255), draw_x, draw_y);
-				}
+					if (this->pal->layer == 7)
+					{
+						this->target.BlitTinted(bmp, a5::RGBA(255, 255, 255, 160), draw_x, draw_y);
+					}
+					else
+					{
+						this->target.Blit(bmp, draw_x, draw_y);
+						this->target.BlitTinted(bmp, a5::RGBA(160, 160, 160, 255), draw_x, draw_y);
+					}
+				});
 			}
 			else
 			{
-				this->target.Blit(bmp, draw_x, draw_y);
+				drawcmd.emplace_back([this, &bmp, draw_x, draw_y]()
+				{
+					this->target.Blit(bmp, draw_x, draw_y);
+				});
 			}
 		}
 	}
+
+	al_hold_bitmap_drawing(true);
+	for (const auto& cmd : drawcmd)
+		cmd();
+	al_hold_bitmap_drawing(false);
 }

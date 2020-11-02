@@ -18,14 +18,14 @@ void Atlas::NewPage()
 	pages.push_back(new Bitmap(width, height));
 }
 
-std::unique_ptr<Bitmap> Atlas::Add(Bitmap &bitmap)
+std::unique_ptr<Bitmap> Atlas::Add(Bitmap &bitmap, Rectangle& rect)
 {
-	std::unique_ptr<Bitmap> atlas_bitmap = Alloc(bitmap.Width(), bitmap.Height());
+	std::unique_ptr<Bitmap> atlas_bitmap = Alloc(rect.Width(), rect.Height());
 	if (!atlas_bitmap)
 		return nullptr;
 	auto tmp = al_get_target_bitmap();
 	atlas_bitmap->Target();
-	atlas_bitmap->Blit(bitmap, 0, 0);
+	atlas_bitmap->Blit(bitmap, 0, 0, rect);
 	al_set_target_bitmap(tmp);
 	return atlas_bitmap;
 }

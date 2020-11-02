@@ -11,6 +11,7 @@ class GFX_Loader
 	protected:
 		struct Module
 		{
+			GFX_Loader* loader;
 			int file_id;
 			pe_reader egf_reader;
 			std::map<int, pe_reader::BitmapInfo> bmp_table;
@@ -44,7 +45,15 @@ class GFX_Loader
 
 		Module& LoadModule(int file);
 
+		ALLEGRO_BITMAP* blankbmp = nullptr;
+		std::unique_ptr<a5::Bitmap> blankbmp_ptr = nullptr;
+
+		ALLEGRO_BITMAP* errbmp = nullptr;
+		std::unique_ptr<a5::Bitmap> errbmp_ptr = nullptr;
+
 	public:
+		int frame_load_allocation = 0;
+
 		GFX_Loader() { Reset(); }
 
 		void Prepare(int file);

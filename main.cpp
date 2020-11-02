@@ -277,8 +277,8 @@ int main(int argc, char** argv)
 	}
 
 	if (!PHYSFS_mountMemory(
-		builtin_data, builtin_data_size, NULL,
-		"builtin.zip", NULL, 0
+		builtin_data, builtin_data_size, nullptr,
+		"builtin.zip", nullptr, 0
 	))
 	{
 		print_physfs_error();
@@ -288,6 +288,7 @@ int main(int argc, char** argv)
 	al_set_physfs_file_interface();
 
 	//al_register_assert_handler(ah);
+
 
 	std::string map_filename;
 
@@ -315,18 +316,18 @@ int main(int argc, char** argv)
 	a5::Timer timer(60.0);
 	a5::Timer anim_timer(2.0);
 
-	std::string title("EO Map Editor 0.4.1 alpha");
+	std::string title("EO Map Editor 0.4.2 alpha");
 
 	a5::Event_Queue q;
 
 	bool running;
 
-#ifndef EOMAP_ACCEL
-	al_set_new_bitmap_flags(ALLEGRO_MEMORY_BITMAP | ALLEGRO_ALPHA_TEST);
-#endif
-	al_set_new_bitmap_flags(ALLEGRO_ALPHA_TEST);
+	al_set_new_bitmap_flags(
+		ALLEGRO_FORCE_LOCKING
+	);
 
-	al_set_separate_blender(ALLEGRO_ADD, ALLEGRO_ALPHA, ALLEGRO_INVERSE_ALPHA,
+	al_set_separate_blender(
+		ALLEGRO_ADD, ALLEGRO_ALPHA, ALLEGRO_INVERSE_ALPHA,
 		ALLEGRO_ADD, ALLEGRO_ONE, ALLEGRO_ONE
 	);
 
@@ -407,7 +408,6 @@ int main(int argc, char** argv)
 	{
 		Q_REGISTER_ALL()
 
-		timer.Start();
 		anim_timer.Start();
 
 		bool scroll_up = false, scroll_right = false, scroll_down = false, scroll_left = false;
@@ -416,10 +416,11 @@ int main(int argc, char** argv)
 		bool mouse_r_down = false;
 
 		running = true;
-		bool anim = false;
 		bool redraw = true;
-		bool mapview_redraw = false;
 		bool pal_redraw = true;
+
+		int map_load_boost = 1000;
+		int pal_load_boost = 1000;
 
 		int pal_scrolled = -1;
 		int map_scrolled = -1;
@@ -493,6 +494,7 @@ int main(int argc, char** argv)
 							case MENU_FILE_OPEN:
 								load_map(0);
 								map_renderer.ResetView();
+								map_load_boost = 1000;
 								break;
 
 							case MENU_FILE_SAVE:
@@ -592,6 +594,7 @@ int main(int argc, char** argv)
 #endif // WIN32
 
 			e = q.Wait();
+
 			bool ack_resize = false;
 
 			do
@@ -622,20 +625,16 @@ int main(int argc, char** argv)
 
 						pal_renderer.yoff = std::max(std::min(pal_renderer.yoff, pal_renderer.pal->height - pal_renderer.target.Height()), 0);
 
-						if (anim)
-						{
-							map_renderer.animation_state = (map_renderer.animation_state + 1) & 0x3;
-							redraw = true;
-
-							pal_renderer.animation_state = (pal_renderer.animation_state + 1) & 0x3;
+						if (pal_scrolled >= 0)
 							pal_redraw = true;
-
-							anim = false;
-						}
 					}
 					else if (te->source == &anim_timer)
 					{
-						anim = true;
+						map_renderer.animation_state = (map_renderer.animation_state + 1) & 0x3;
+						redraw = true;
+
+						pal_renderer.animation_state = (pal_renderer.animation_state + 1) & 0x3;
+						pal_redraw = true;
 					}
 				}
 				else if ((de = dynamic_cast<a5::Display::Event *>(e.get())))
@@ -1145,6 +1144,7 @@ int main(int argc, char** argv)
 											pal_display.Target();
 											map_renderer.highlight_spec = false;
 											pal_renderer.SetPal(i, pal[i]);
+											pal_load_boost = 1000;
 											break;
 										}
 									}
@@ -1158,6 +1158,7 @@ int main(int argc, char** argv)
 											pal_display.Target();
 											map_renderer.highlight_spec = (i == 1);
 											pal_renderer.SetPal(8+i, pal[8+i]);
+											pal_load_boost = 1000;
 											break;
 										}
 									}
@@ -1201,8 +1202,9 @@ int main(int argc, char** argv)
 
 							if (me->dz)
 							{
-								pal_renderer.yoff -= me->dz * 96 * scroll_multiplier;
 								pal_scrolled = 0;
+								pal_redraw = true;
+								pal_renderer.yoff -= me->dz * 96 * scroll_multiplier;
 								pal_renderer.yoff = std::max(std::min(pal_renderer.yoff, pal_renderer.pal->height - pal_renderer.target.Height()), 0);
 							}
 						}
@@ -1223,6 +1225,8 @@ int main(int argc, char** argv)
 				a5::disable_auto_target = true;
 				map_renderer.target.Clear();
 
+				map_renderer.gfxloader.frame_load_allocation = 20 + map_load_boost;
+				map_load_boost = 0;
 				if (map.loaded)
 				{
 					al_hold_bitmap_drawing(true);
@@ -1266,9 +1270,12 @@ int main(int argc, char** argv)
 
 				map_display.Flip();
 				a5::disable_auto_target = false;
-				redraw = false;
+
+				if (map_renderer.gfxloader.frame_load_allocation > 0)
+					redraw = false;
 			}
-			else if (pal_redraw)
+
+			if (pal_redraw)
 			{
 				pal_renderer.target.Target();
 				a5::disable_auto_target = true;
@@ -1276,9 +1283,9 @@ int main(int argc, char** argv)
 				if (pal_renderer.pal->layer == 7) pal_display.Clear(a5::RGB(128, 128, 128));
 				else pal_display.Clear(a5::RGB(0, 0, 0));
 
-				al_hold_bitmap_drawing(true);
+				pal_renderer.gfxloader.frame_load_allocation = 20 + pal_load_boost;
+				pal_load_boost = 0;
 				pal_renderer.Render();
-				al_hold_bitmap_drawing(false);
 
 				pal_display.Blit(palhead, 0, 0);
 				pal_display.Blit(palfoot, 0, pal_display.Height() - 32);
@@ -1294,10 +1301,12 @@ int main(int argc, char** argv)
 
 				if (pal_scrolled != -1)
 				{
-					int alpha = 220 - (pal_scrolled += 2);
-					if (pal_scrolled < 60) alpha = 160;
+					if (pal_scrolled == 0)
+						timer.Start();
 
-					//al_draw_line(634, (float(pal_renderer.yoff) / pal_renderer.pal->height * (pal_display.Height() - 48)) + 4, 634, (float(pal_renderer.yoff) / pal_renderer.pal->height * (pal_display.Height() - 48)) + 36, a5::Color(a5::RGB(255, 255, 255)), 4.0f);
+					int alpha = 220 - (++pal_scrolled * 2);
+					if (pal_scrolled < 30) alpha = 160;
+
 					float f = pal_renderer.yoff;
 					f /= pal_renderer.pal->height - pal_display.Height();
 					f *= pal_display.Height() - 104;
@@ -1307,12 +1316,12 @@ int main(int argc, char** argv)
 					if (alpha <= 0)
 					{
 						pal_scrolled = -1;
+						timer.Stop();
 					}
 				}
-				else
-				{
+
+				if (pal_renderer.gfxloader.frame_load_allocation > 0)
 					pal_redraw = false;
-				}
 
 				pal_renderer.target.Flip();
 				a5::disable_auto_target = false;

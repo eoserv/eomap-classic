@@ -358,18 +358,15 @@ GUI::GUI(a5::Display &display, a5::Display &pal_display)
 	this->wnd = al_get_win_window_handle(display);
 	this->pal_wnd = al_get_win_window_handle(pal_display);
 
-#ifdef EOMAP_WINDERS
 	DWORD map_display_x = 0, map_display_y = 0;
 	DWORD map_display_w = 0, map_display_h = 0;
 	DWORD map_display_x_type = REG_DWORD, map_display_y_type = REG_DWORD;
 	DWORD map_display_w_type = REG_DWORD, map_display_h_type = REG_DWORD;
 	DWORD map_display_x_size = sizeof(DWORD), map_display_y_size = sizeof(DWORD);
 	DWORD map_display_w_size = sizeof(DWORD), map_display_h_size = sizeof(DWORD);
-#endif
 
 	int map_display_x_int = 0, map_display_y_int = 0;
 
-#ifdef EOMAP_WINDERS
 	int ret;
 
 	if ((ret = RegCreateKeyEx(HKEY_CURRENT_USER, "Software\\EOMap2", 0, 0, 0, KEY_READ | KEY_WRITE, 0, &registry, 0)) != ERROR_SUCCESS)
@@ -414,11 +411,8 @@ GUI::GUI(a5::Display &display, a5::Display &pal_display)
 		SetWindowPos(this->pal_wnd, HWND_TOP, map_display_x, map_display_y, map_display_w, map_display_h, 0);
 	}
 	else
-#endif
 	{
-#ifdef EOMAP_WINDERS
 		default_position:
-#endif
 		al_get_window_position(*this->display, &map_display_x_int, &map_display_y_int);
 		al_set_window_position(*this->display, map_display_x_int, map_display_y_int/2 - 32);
 		al_set_window_position(*this->pal_display, map_display_x_int, map_display_y_int/2 + this->display->Height() + 32);
@@ -433,27 +427,6 @@ GUI::GUI(a5::Display &display, a5::Display &pal_display)
 
 	// Menu causes issues with dxvk
 	SetMenu(this->wnd, this->menu);
-
-	/*
-	ALLEGRO_MENU_INFO menu_info[] = {
-		ALLEGRO_START_OF_MENU("File", 1),
-			{ "New", MENU_FILE_NEW, 0, NULL },
-			{ "Open", MENU_FILE_OPEN, 0, NULL },
-			{ "Save", MENU_FILE_SAVE, ALLEGRO_MENU_ITEM_DISABLED, NULL },
-			{ "Save As", MENU_FILE_SAVE_AS, ALLEGRO_MENU_ITEM_DISABLED, NULL },
-			{ NULL,(uint16_t)-1, 0, NULL },
-			{ "Exit", MENU_FILE_EXIT, 0, NULL },
-		ALLEGRO_END_OF_MENU,
-	};
-
-	this->al_menu = al_build_menu(menu_info);
-
-	if (!this->al_menu)
-		throw std::runtime_error("Menu creation failed");
-
-	if (!al_set_display_menu(display, al_menu))
-		throw std::runtime_error("Menu assignment failed");
-	*/
 }
 
 int GUI::RunDialog(int dialogid)
@@ -545,7 +518,6 @@ const char *GUI::SaveFile()
 
 GUI::~GUI()
 {
-#ifdef EOMAP_WINDERS
 	if (this->registry)
 	{
 		RECT rect;
@@ -572,7 +544,6 @@ GUI::~GUI()
 		RegSetValueEx(this->registry, "PalWinW", 0, REG_DWORD, reinterpret_cast<BYTE *>(&map_display_x), sizeof(DWORD));
 		RegSetValueEx(this->registry, "PalWinH", 0, REG_DWORD, reinterpret_cast<BYTE *>(&map_display_y), sizeof(DWORD));
 	}
-#endif
 
 	/*
 	if (this->menu)

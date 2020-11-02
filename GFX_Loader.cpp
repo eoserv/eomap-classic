@@ -3,47 +3,64 @@
 #include "dib_reader.hpp"
 
 extern std::string g_eo_install_path;
-static ALLEGRO_BITMAP* g_errbmp = nullptr;
-static std::unique_ptr<a5::Bitmap> g_errbmp_ptr = nullptr;
-/*
-a5::Bitmap& GFX_Loader::Module::LoadBitmap(int id)
+
+static void do_dib_copy(a5::Bitmap& bmp, dib_reader& reader, int rows)
 {
-	auto cache_it = bmp_cache.find(id);
+	auto dpyfmt = al_get_display_format(al_get_current_display());
 
-	if (cache_it != bmp_cache.end())
-		return *cache_it->second;
+	if (dpyfmt == a5::Pixel_Format::ARGB_8888 || dpyfmt == a5::Pixel_Format::XRGB_8888)
+	{
+		auto lock = bmp.Lock(a5::Pixel_Format::ARGB_8888, a5::Bitmap::WriteOnly);
+		char* start = reinterpret_cast<char*>(lock.Data());
+		auto pitch = lock.Pitch();
 
-	auto bmp = LoadBitmapUncached(id);
+		for (int i = 0; i < rows; ++i)
+		{
+			char* row = start + pitch * i;
+			reader.read_line_argb(row, i);
+		}
+	}
+	else
+	{
+		auto lock = bmp.Lock(a5::Pixel_Format::ABGR_8888, a5::Bitmap::WriteOnly);
+		char* start = reinterpret_cast<char*>(lock.Data());
+		auto pitch = lock.Pitch();
 
-	auto emplace_result = bmp_cache.emplace(id, std::move(bmp));
-
-	return *emplace_result.first->second;
-}*/
+		for (int i = 0; i < rows; ++i)
+		{
+			char* row = start + pitch * i;
+			reader.read_line_abgr(row, i);
+		}
+	}
+}
 
 std::unique_ptr<a5::Bitmap> GFX_Loader::Module::LoadBitmapUncached(int id)
 {
 	if (file_id == 3 && id == 100)
 	{
-		auto blankbmp = std::make_unique<a5::Bitmap>("blank.bmp");
-		al_convert_mask_to_alpha(*blankbmp, al_map_rgb(255, 0, 255));
-		return blankbmp;
+		loader->blankbmp = al_load_bitmap("blank.bmp");
+		al_convert_mask_to_alpha(loader->blankbmp, al_map_rgb(255, 0, 255));
+
+		if (!loader->blankbmp_ptr)
+			loader->blankbmp_ptr = std::make_unique<a5::Bitmap>(loader->blankbmp);
+
+		return std::make_unique<a5::Bitmap>(loader->blankbmp, false);
 	}
 
 	auto bmp_table_it = bmp_table.find(id);
 
 	if (bmp_table_it == bmp_table.end())
 	{
-		//EOMAP_ERROR("Failed to load bitmap: %d/%d", file_id, id);
-		if (!g_errbmp)
+		if (!loader->errbmp)
 		{
-			g_errbmp = al_load_bitmap("error.bmp");
-			al_convert_mask_to_alpha(g_errbmp, al_map_rgb(255, 0, 255));
+			loader->errbmp = al_load_bitmap("error.bmp");
+			al_convert_mask_to_alpha(loader->errbmp, al_map_rgb(255, 0, 255));
 		}
 
-		if (!g_errbmp_ptr)
-			g_errbmp_ptr = std::make_unique<a5::Bitmap>(g_errbmp);
+		if (!loader->errbmp_ptr)
+			loader->errbmp_ptr = std::make_unique<a5::Bitmap>(loader->errbmp);
 
-		return std::make_unique<a5::Bitmap>(g_errbmp, false);
+		return std::make_unique<a5::Bitmap>(loader->errbmp, false);
 	}
 
 	auto&& info = bmp_table_it->second;
@@ -58,32 +75,21 @@ std::unique_ptr<a5::Bitmap> GFX_Loader::Module::LoadBitmapUncached(int id)
 
 	if (check_result)
 	{
-		//EOMAP_ERROR("Failed to load bitmap: %d/%d (DIB error: %s)", file_id, id, check_result);
-		if (!g_errbmp)
+		if (!loader->errbmp)
 		{
-			g_errbmp = al_load_bitmap("error.bmp");
-			al_convert_mask_to_alpha(g_errbmp, al_map_rgb(255, 0, 255));
+			loader->errbmp = al_load_bitmap("error.bmp");
+			al_convert_mask_to_alpha(loader->errbmp, al_map_rgb(255, 0, 255));
 		}
 
-		if (!g_errbmp_ptr)
-			g_errbmp_ptr = std::make_unique<a5::Bitmap>(g_errbmp);
+		if (!loader->errbmp_ptr)
+			loader->errbmp_ptr = std::make_unique<a5::Bitmap>(loader->errbmp);
 
-		return std::make_unique<a5::Bitmap>(g_errbmp, false);
+		return std::make_unique<a5::Bitmap>(loader->errbmp, false);
 	}
 
 	auto bmp = std::make_unique<a5::Bitmap>(reader.width(), reader.height());
 
-	{
-		auto lock = bmp->Lock(a5::Pixel_Format::ABGR_8888, a5::Bitmap::WriteOnly);
-
-		for (int i = 0; i < info.height; ++i)
-		{
-			char* row = reinterpret_cast<char*>(lock.Data()) + lock.Pitch() * i;
-			reader.read_line(row, i);
-		}
-	}
-
-	al_convert_mask_to_alpha(*bmp, al_map_rgb(0, 0, 0));
+	do_dib_copy(*bmp, reader, info.height);
 
 	return bmp;
 }
@@ -113,7 +119,7 @@ GFX_Loader::Module& GFX_Loader::LoadModule(int file)
 
 	auto emplace_result = module_cache.emplace(
 		file,
-		Module{file, std::move(module_reader), std::move(bmp_table)}
+		Module{this, file, std::move(module_reader), std::move(bmp_table)}
 	);
 
 	return emplace_result.first->second;
@@ -154,6 +160,19 @@ a5::Bitmap& GFX_Loader::Load(int file, int id, int anim)
 	if (cache_it != anim_cache.end())
 		return *cache_it->second;
 
+	if (frame_load_allocation-- < 0)
+	{
+		if (!blankbmp)
+		{
+			blankbmp = al_create_bitmap(0, 0);
+		}
+
+		if (!blankbmp_ptr)
+			blankbmp_ptr = std::make_unique<a5::Bitmap>(blankbmp);
+
+		return *blankbmp_ptr;
+	}
+
 	bool held = al_is_bitmap_drawing_held();
 
 	if (held)
@@ -163,34 +182,37 @@ a5::Bitmap& GFX_Loader::Load(int file, int id, int anim)
 	auto bmp_ptr = module.LoadBitmapUncached(100 + id);
 	auto& bmp = *bmp_ptr;
 
-	if (bmp == g_errbmp)
-		return *g_errbmp_ptr;
+	if (bmp == errbmp)
+		return *errbmp_ptr;
 
-	auto anim_bmp = [&]() -> std::unique_ptr<a5::Bitmap>
+	int bmpw = bmp.Width();
+	int bmph = bmp.Height();
+
+	auto anim_rect = [&]() -> a5::Rectangle
 	{
 		if (file == 3)
 		{
-			if (bmp.Width() >= 128)
-				return bmp.Sub(a5::Rectangle(anim * 64, 0, anim * 64 + 64, 32));
+			if (bmpw >= 120)
+				return a5::Rectangle(anim * 64, 0, anim * 64 + 64, 32);
 			else
-				return bmp.Sub(a5::Rectangle(0, 0, 64, 32));
+				return a5::Rectangle(0, 0, 64, 32);
 		}
-		else if (file == 6 && bmp.Width() >= 128)
+		else if (file == 6 && bmpw >= 120)
 		{
-			auto frame_width = bmp.Width() / 4;
-			return bmp.Sub(a5::Rectangle(anim * frame_width, 0, (anim + 1) * frame_width, bmp.Height()));
+			auto frame_width = bmpw / 4;
+			return a5::Rectangle(anim * frame_width, 0, (anim + 1) * frame_width, bmph);
 		}
 		else
 		{
-			return bmp.Sub(a5::Rectangle(0, 0, bmp.Width(), bmp.Height()));
+			return a5::Rectangle(0, 0, bmpw, bmph);
 		}
 	}();
 
-	auto atlas_anim_bmp = atlas[anim]->Add(*anim_bmp);
+	auto atlas_anim_bmp = atlas[anim]->Add(bmp, anim_rect);
 
 	auto emplace_result = anim_cache.emplace(
 		BmpFrame{file, id, anim},
-		std::move(atlas_anim_bmp ? atlas_anim_bmp : anim_bmp)
+		std::move(atlas_anim_bmp)
 	);
 
 	if (held)
@@ -214,7 +236,7 @@ a5::Bitmap& GFX_Loader::LoadRaw(std::string filename)
 
 bool GFX_Loader::IsError(a5::Bitmap& bmp)
 {
-	return (ALLEGRO_BITMAP*)bmp == g_errbmp;
+	return (ALLEGRO_BITMAP*)bmp == errbmp;
 }
 
 void GFX_Loader::Reset()
@@ -227,14 +249,12 @@ void GFX_Loader::Reset()
 
 		if (max_size >= 2048)
 			atlas[0] = std::make_unique<a5::Atlas>(2048, 2048, 32, 32);
-		else if (max_size >= 1024)
-			atlas[0] = std::make_unique<a5::Atlas>(1024, 1024, 32, 32);
 		else
-			atlas[0] = std::make_unique<a5::Atlas>(512, 512, 32, 32);
+			atlas[0] = std::make_unique<a5::Atlas>(1024, 1024, 32, 32);
 
-		atlas[1] = std::make_unique<a5::Atlas>(256, 256, 32, 32);
-		atlas[2] = std::make_unique<a5::Atlas>(256, 256, 32, 32);
-		atlas[3] = std::make_unique<a5::Atlas>(256, 256, 32, 32);
+		atlas[1] = std::make_unique<a5::Atlas>(512, 512, 32, 32);
+		atlas[2] = std::make_unique<a5::Atlas>(512, 512, 32, 32);
+		atlas[3] = std::make_unique<a5::Atlas>(512, 512, 32, 32);
 	}
 	else
 	{
