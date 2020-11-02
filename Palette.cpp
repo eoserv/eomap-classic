@@ -84,6 +84,10 @@ void Palette::Populate(GFX_Loader &loader)
 
 	int local_num_tiles = (this->file >= 0) ? (loader.CountBitmaps(this->file) - 1) : num_tiles_spec;
 
+	// gfx003 has one extra resource
+	if (this->file == 3)
+		--local_num_tiles;
+
 	if (this->file == -1 || this->file == 3)
 	{
 		for (int i = 0; i < local_num_tiles; ++i)
@@ -108,7 +112,7 @@ void Palette::Populate(GFX_Loader &loader)
 		bool* tilemap = g_tilemap;
 		int cy = 0;
 
-		for (int i = 1; i < local_num_tiles; ++i)
+		for (int i = 1; i <= local_num_tiles; ++i)
 		{
 			auto bmp_info = loader.Info(this->file, i);
 
@@ -117,6 +121,9 @@ void Palette::Populate(GFX_Loader &loader)
 				if (bmp_info.width >= 120)
 					bmp_info.width /= 4;
 			}
+
+			if (bmp_info.width > 640)
+				bmp_info.width = 640;
 
 			int draw_x = 0, draw_y = 0;
 
