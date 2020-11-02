@@ -121,69 +121,57 @@ void dib_reader::start()
 	convert_table_init = true;
 }
 
+using read_fn_t = std::uint32_t (*)(const char* data, size_t offset);
+
+static read_fn_t read_fn_for_bpp(int bpp)
+{
+	constexpr read_fn_t read_fns[4] = {
+		nullptr,
+		[](const char* data, std::size_t offset) // 16-bit (bpp = 2)
+		{
+			return std::uint32_t(int_pack_16_le(
+				data[offset], data[offset + 1]
+			));
+		},
+		[](const char* data, std::size_t offset) // 24-bit (bpp = 3)
+		{
+			return int_pack_32_le(
+				data[offset], data[offset + 1],
+				data[offset + 2], 0
+			);
+		},
+		[](const char* data, std::size_t offset) // 32-bit (bpp = 4)
+		{
+			return int_pack_32_le(
+				data[offset], data[offset + 1],
+				data[offset + 2], data[offset + 3]
+			);
+		},
+	};
+
+	return read_fns[bpp];
+}
+
 void dib_reader::read_line_argb(char* outbuf, int row)
 {
 	int line = ((height() < 0) ? row : height() - 1 - row);
-
-	const char *linebuf = data() + stride() * line;
-
-	uint32_t(*read_fn)(const char* data, size_t offset) = nullptr;
-
-	if (bpp() == 1)
-	{
-		read_fn = [](const char* data, size_t offset) -> uint32_t
-		{
-			return data[offset];
-		};
-	}
-	else if (bpp() == 2)
-	{
-		read_fn = [](const char* data, size_t offset) -> uint32_t
-		{
-			char a = data[offset];
-			char b = data[offset + 1];
-
-			return int_pack_16_le(a, b);
-		};
-	}
-	else if (bpp() == 3)
-	{
-		read_fn = [](const char* data, size_t offset) -> uint32_t
-		{
-			char a = data[offset];
-			char b = data[offset + 1];
-			char c = data[offset + 2];
-
-			return int_pack_32_le(a, b, c, 0);
-		};
-	}
-	else if (bpp() == 4)
-	{
-		read_fn = [](const char* data, size_t offset) -> uint32_t
-		{
-			char a = data[offset];
-			char b = data[offset + 1];
-			char c = data[offset + 2];
-			char d = data[offset + 3];
-
-			return int_pack_32_le(a, b, c, d);
-		};
-	}
+	const char* linebuf = data() + stride() * line;
+	auto read_fn = read_fn_for_bpp(bpp());
 
 	for (int i = 0; i < width(); i++)
 	{
-		size_t pixel_offset = linebuf - data_ptr;
-		uint32_t pixel;
+		std::size_t pixel_offset = linebuf - data_ptr;
+		std::uint32_t pixel;
 
 		if (pixel_offset < data_size + bpp())
 			pixel = read_fn(data_ptr, pixel_offset);
 		else
 			pixel = 0;
 
-		char r = char(rtable[((pixel >> rs) & rm)]);
-		char g = char(gtable[((pixel >> gs) & gm)]);
-		char b = char(btable[((pixel >> bs) & bm)]);
-		char a = char(((r|g|b) != 0) * 0xFF);
+		char r = static_cast<char>(rtable[((pixel >> rs) & rm)]);
+		char g = static_cast<char>(gtable[((pixel >> gs) & gm)]);
+		char b = static_cast<char>(btable[((pixel >> bs) & bm)]);
+		char a = static_cast<char>(((r|g|b) != 0) * 0xFF);
 
 		outbuf[0] = b;
 		outbuf[1] = g;
@@ -198,66 +186,23 @@ void dib_reader::read_line_argb(char* outbuf, int row)
 void dib_reader::read_line_abgr(char* outbuf, int row)
 {
 	int line = ((height() < 0) ? row : height() - 1 - row);
-
-	const char *linebuf = data() + stride() * line;
-
-	uint32_t(*read_fn)(const char* data, size_t offset) = nullptr;
-
-	if (bpp() == 1)
-	{
-		read_fn = [](const char* data, size_t offset) -> uint32_t
-		{
-			return data[offset];
-		};
-	}
-	else if (bpp() == 2)
-	{
-		read_fn = [](const char* data, size_t offset) -> uint32_t
-		{
-			char a = data[offset];
-			char b = data[offset + 1];
-
-			return int_pack_16_le(a, b);
-		};
-	}
-	else if (bpp() == 3)
-	{
-		read_fn = [](const char* data, size_t offset) -> uint32_t
-		{
-			char a = data[offset];
-			char b = data[offset + 1];
-			char c = data[offset + 2];
-
-			return int_pack_32_le(a, b, c, 0);
-		};
-	}
-	else if (bpp() == 4)
-	{
-		read_fn = [](const char* data, size_t offset) -> uint32_t
-		{
-			char a = data[offset];
-			char b = data[offset + 1];
-			char c = data[offset + 2];
-			char d = data[offset + 3];
-
-			return int_pack_32_le(a, b, c, d);
-		};
-	}
+	const char* linebuf = data() + stride() * line;
+	auto read_fn = read_fn_for_bpp(bpp());
 
 	for (int i = 0; i < width(); i++)
 	{
-		size_t pixel_offset = linebuf - data_ptr;
-		uint32_t pixel;
+		std::size_t pixel_offset = linebuf - data_ptr;
+		std::uint32_t pixel;
 
 		if (pixel_offset < data_size + bpp())
 			pixel = read_fn(data_ptr, pixel_offset);
 		else
 			pixel = 0;
 
-		char r = char(rtable[((pixel >> rs) & rm)]);
-		char g = char(gtable[((pixel >> gs) & gm)]);
-		char b = char(btable[((pixel >> bs) & bm)]);
-		char a = char(((r|g|b) != 0) * 0xFF);
+		char r = static_cast<char>(rtable[((pixel >> rs) & rm)]);
+		char g = static_cast<char>(gtable[((pixel >> gs) & gm)]);
+		char b = static_cast<char>(btable[((pixel >> bs) & bm)]);
+		char a = static_cast<char>(((r|g|b) != 0) * 0xFF);
 
 		outbuf[0] = r;
 		outbuf[1] = g;
