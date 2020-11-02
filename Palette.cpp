@@ -1,6 +1,8 @@
 
 #include "Palette.hpp"
 
+#include <cstring>
+
 int shared_yoffs[7] = {};
 
 const int num_tiles_spec = 41;
@@ -58,12 +60,15 @@ const char *tiles_spec[1][48] = {
 	}
 };
 
-inline int divup(int n, int d)
+static constexpr int divup(int n, int d)
 {
 	return (n + (d - 1)) / d;
 }
 
-const int res = 32;
+static constexpr int res = 16;
+
+static constexpr int tilemap_size = divup(640, res) * divup(200000, res);
+static bool* g_tilemap;
 
 void Palette::Populate(GFX_Loader &loader)
 {
@@ -95,7 +100,13 @@ void Palette::Populate(GFX_Loader &loader)
 	}
 	else
 	{
-		bool *tilemap = static_cast<bool *>(calloc(divup(640, res) * divup(200000, res), sizeof(bool)));
+		if (!g_tilemap)
+			g_tilemap = new bool[tilemap_size];
+
+		std::memset(g_tilemap, 0, tilemap_size);
+
+		bool* tilemap = g_tilemap;
+		int cy = 0;
 
 		for (int i = 1; i < local_num_tiles; ++i)
 		{
@@ -109,7 +120,7 @@ void Palette::Populate(GFX_Loader &loader)
 
 			int draw_x = 0, draw_y = 0;
 
-			for (int cy = 0; cy < divup(200000, res); ++cy)
+			for (; cy < divup(200000, res); ++cy)
 			{
 				for (int cx = 0; cx < divup(640, res); ++cx)
 				{
@@ -149,9 +160,6 @@ void Palette::Populate(GFX_Loader &loader)
 
 			this->height = std::max(this->height, tile.y + tile.h);
 		}
-
-		//delete tilemap;
-		free(tilemap);
 	}
 
 	this->height += 64;
