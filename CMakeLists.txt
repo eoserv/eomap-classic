@@ -93,6 +93,7 @@ add_executable(eomap4
 )
 
 target_compile_options(eomap4 PRIVATE -fwrapv)
+target_link_options(eomap4 PRIVATE -mwindows)
 target_link_libraries(eomap4 PRIVATE a5ses)
 
 # -----

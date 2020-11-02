@@ -436,27 +436,6 @@ int GUI::RunDialog(int dialogid)
 	return DialogBox(GetModuleHandle(0), MAKEINTRESOURCE(dialogid), this->wnd, gui_dialog_proc);
 }
 
-void GUI::SwitchIn()
-{
-	static bool halt = false;
-
-	if (halt)
-	{
-		halt = false;
-		return;
-	}
-
-	//SetForegroundWindow(this->pal_wnd);
-	SetForegroundWindow(this->wnd);
-
-	halt = true;
-}
-
-void GUI::SwitchOut()
-{
-
-}
-
 void GUI::MenuOff()
 {
 	SetMenu(this->wnd, nullptr);

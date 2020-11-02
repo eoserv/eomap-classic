@@ -209,7 +209,7 @@ static bool select_eo_installation()
 
 	while (true)
 	{
-		if (!al_show_native_file_dialog(nullptr, chooser))
+		if (!al_show_native_file_dialog(al_get_current_display(), chooser))
 		{
 			return false;
 		}
@@ -516,6 +516,8 @@ int main(int argc, char** argv)
 							{
 								std::string old_path = g_eo_install_path;
 
+								map_display.Target();
+
 								if (select_eo_installation())
 								{
 									if (old_path != g_eo_install_path)
@@ -641,20 +643,7 @@ int main(int argc, char** argv)
 				{
 					if (de->source == &map_display)
 					{
-						if (de->SubType() == a5::Display::Event::SwitchIn)
-						{
-							pal_redraw = true;
-#ifdef WIN32
-							gui.SwitchIn();
-#endif // WIN32
-						}
-						else if (de->SubType() == a5::Display::Event::SwitchOut)
-						{
-#ifdef WIN32
-							gui.SwitchOut();
-#endif // WIN32
-						}
-						else if (de->SubType() == a5::Display::Event::Close)
+						if (de->SubType() == a5::Display::Event::Close)
 						{
 							running = false;
 						}

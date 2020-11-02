@@ -82,9 +82,6 @@ class GUI
 
 		void Message(const char *title, const char *message);
 
-		void SwitchIn();
-		void SwitchOut();
-
 		void MenuOff();
 		void MenuOn();
 
