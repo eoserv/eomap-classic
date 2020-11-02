@@ -32,7 +32,7 @@ std::unique_ptr<Bitmap> Atlas::Add(Bitmap &bitmap, Rectangle& rect)
 
 std::unique_ptr<Bitmap> Atlas::Alloc(int width, int height)
 {
-	if (width <= 0 || height <= 0)
+	if (width < 0 || height < 0)
 		return nullptr;
 
 	if (width > this->width || height > this->height)

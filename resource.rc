@@ -116,13 +116,13 @@ FONT 8, "Ms Shell Dlg"
 
 
 
-DIALOG_ABOUT DIALOG 0, 0, 150, 120
+DIALOG_ABOUT DIALOG 0, 0, 150, 110
 STYLE DS_3DLOOK | DS_CENTER | DS_MODALFRAME | DS_SHELLFONT | WS_VISIBLE | WS_BORDER | WS_CAPTION | WS_DLGFRAME | WS_POPUP | WS_SYSMENU
 CAPTION "About"
 FONT 8, "Ms Shell Dlg"
 {
-    DEFPUSHBUTTON   "Cool!", DIALOG_ABOUT_CLOSE, 44, 98, 50, 14
-    CTEXT           "\nEO Map Editor 0.4.1\n\nhttps://eoserv.net/\n\nMade by:\nSausage <sausage@tehsausage.com>\nBart", DIALOG_ABOUT_TEXT, 8, 8, 124, 82, WS_DLGFRAME | SS_CENTER | SS_NOPREFIX, WS_EX_CLIENTEDGE
+    DEFPUSHBUTTON   "Cool!", DIALOG_ABOUT_CLOSE, 44, 88, 50, 14
+    CTEXT           "\nEO Map Editor 0.4.2\n\nhttps://eoserv.net/\n\nMade by:\nSausage, Apollo, Bart", DIALOG_ABOUT_TEXT, 8, 8, 130, 72, WS_DLGFRAME | SS_CENTER | SS_NOPREFIX, WS_EX_CLIENTEDGE
 }
 
 

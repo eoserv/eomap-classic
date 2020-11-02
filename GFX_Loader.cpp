@@ -4,36 +4,6 @@
 
 extern std::string g_eo_install_path;
 
-static void do_dib_copy(a5::Bitmap& bmp, dib_reader& reader, int rows)
-{
-	auto dpyfmt = al_get_display_format(al_get_current_display());
-
-	if (dpyfmt == a5::Pixel_Format::ARGB_8888 || dpyfmt == a5::Pixel_Format::XRGB_8888)
-	{
-		auto lock = bmp.Lock(a5::Pixel_Format::ARGB_8888, a5::Bitmap::WriteOnly);
-		char* start = reinterpret_cast<char*>(lock.Data());
-		auto pitch = lock.Pitch();
-
-		for (int i = 0; i < rows; ++i)
-		{
-			char* row = start + pitch * i;
-			reader.read_line_argb(row, i);
-		}
-	}
-	else
-	{
-		auto lock = bmp.Lock(a5::Pixel_Format::ABGR_8888, a5::Bitmap::WriteOnly);
-		char* start = reinterpret_cast<char*>(lock.Data());
-		auto pitch = lock.Pitch();
-
-		for (int i = 0; i < rows; ++i)
-		{
-			char* row = start + pitch * i;
-			reader.read_line_abgr(row, i);
-		}
-	}
-}
-
 std::unique_ptr<a5::Bitmap> GFX_Loader::Module::LoadBitmapUncached(int id)
 {
 	if (file_id == 3 && id == 100)
@@ -69,12 +39,14 @@ std::unique_ptr<a5::Bitmap> GFX_Loader::Module::LoadBitmapUncached(int id)
 	egf_reader.read_resource(buf.get(), info.start, info.size);
 
 	dib_reader reader(buf.get(), info.size);
-	reader.start();
 
 	auto check_result = reader.check_format();
 
 	if (check_result)
 	{
+		fprintf(stderr, "Can't load BMP %d/%d: %s\n", file_id, id, check_result);
+		fflush(stderr);
+
 		if (!loader->errbmp)
 		{
 			loader->errbmp = al_load_bitmap("error.bmp");
@@ -89,7 +61,25 @@ std::unique_ptr<a5::Bitmap> GFX_Loader::Module::LoadBitmapUncached(int id)
 
 	auto bmp = std::make_unique<a5::Bitmap>(reader.width(), reader.height());
 
-	do_dib_copy(*bmp, reader, info.height);
+	auto dpyfmt = static_cast<ALLEGRO_PIXEL_FORMAT>(
+		al_get_bitmap_format(*bmp)
+	);
+
+	auto fmt = static_cast<a5::Pixel_Format::Format>(
+		reader.start(dpyfmt)
+	);
+
+	auto lock = bmp->Lock(fmt, a5::Bitmap::WriteOnly);
+
+	char* start = reinterpret_cast<char*>(lock.Data());
+	auto pitch = lock.Pitch();
+	int rows = bmp->Height();
+
+	for (int i = 0; i < rows; ++i)
+	{
+		char* row = start + pitch * i;
+		reader.read_line(row, i);
+	}
 
 	return bmp;
 }
@@ -152,7 +142,7 @@ a5::Bitmap& GFX_Loader::Load(int file, int id, int anim)
 {
 	auto info = Info(file, id);
 
-	if ((file != 3 && file != 6) || info.width < 128)
+	if ((file != 3 && file != 6) || info.width < 120)
 		anim = 0;
 
 	auto cache_it = anim_cache.find(BmpFrame{file, id, anim});
@@ -207,6 +197,23 @@ a5::Bitmap& GFX_Loader::Load(int file, int id, int anim)
 			return a5::Rectangle(0, 0, bmpw, bmph);
 		}
 	}();
+
+	// Animations larger than 512x512 can't be loaded without increasing the
+	// anim texture atlas size
+
+	if (anim > 0)
+	{
+		if (anim_rect.Width() > 512)
+			anim_rect.x2 = anim_rect.x1 + 512;
+
+		if (anim_rect.Height() > 512)
+			anim_rect.y2 = anim_rect.y1 + 512;
+	}
+
+	// Graphics wider than 640 can't fit within the palette window
+
+	if (anim_rect.Width() > 640)
+		anim_rect.x2 = anim_rect.x1 + 640;
 
 	auto atlas_anim_bmp = atlas[anim]->Add(bmp, anim_rect);
 

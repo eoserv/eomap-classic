@@ -1225,7 +1225,7 @@ int main(int argc, char** argv)
 				a5::disable_auto_target = true;
 				map_renderer.target.Clear();
 
-				map_renderer.gfxloader.frame_load_allocation = 20 + map_load_boost;
+				map_renderer.gfxloader.frame_load_allocation = 100 + map_load_boost;
 				map_load_boost = 0;
 				if (map.loaded)
 				{

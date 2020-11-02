@@ -69,8 +69,13 @@ class Pal_Renderer
 
 		void SetPal(int layer, Palette &pal)
 		{
+			int prev_file = -2;
+
 			if (this->pal)
+			{
+				prev_file = this->pal->file;
 				*this->pal->yoff = yoff;
+			}
 
 			pal.Populate(this->gfxloader);
 			this->pal = &pal;
@@ -78,7 +83,8 @@ class Pal_Renderer
 
 			this->yoff = *pal.yoff;
 
-			gfxloader.Reset();
+			if (pal.file != prev_file)
+				gfxloader.Reset();
 		}
 
 		void Move(int y)

@@ -45,6 +45,9 @@ class GFX_Loader
 
 		Module& LoadModule(int file);
 
+		ALLEGRO_BITMAP* nullbmp = nullptr;
+		std::unique_ptr<a5::Bitmap> nullbmp_ptr = nullptr;
+
 		ALLEGRO_BITMAP* blankbmp = nullptr;
 		std::unique_ptr<a5::Bitmap> blankbmp_ptr = nullptr;
 

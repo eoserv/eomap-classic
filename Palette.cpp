@@ -103,7 +103,7 @@ void Palette::Populate(GFX_Loader &loader)
 
 			if (this->file == 3 || this->file == 6)
 			{
-				if (bmp_info.width >= 128)
+				if (bmp_info.width >= 120)
 					bmp_info.width /= 4;
 			}
 
