@@ -627,6 +627,9 @@ int main(int argc, char** argv)
 
 						pal_renderer.yoff = std::max(std::min(pal_renderer.yoff, pal_renderer.pal->height - pal_renderer.target.Height()), 0);
 
+						if (map_scrolled >= 0)
+							redraw = true;
+
 						if (pal_scrolled >= 0)
 							pal_redraw = true;
 					}
@@ -690,6 +693,9 @@ int main(int argc, char** argv)
 							else if (ke->keycode == a5::Keyboard::Key::Right) scroll_right = true;
 							else if (ke->keycode == a5::Keyboard::Key::Down) scroll_down = true;
 							else if (ke->keycode == a5::Keyboard::Key::Left) scroll_left = true;
+
+							if (scroll_up || scroll_right || scroll_down || scroll_left)
+								map_scrolled = 0;
 						}
 						else if (ke->SubType() == a5::Keyboard::Event::Up)
 						{
@@ -715,6 +721,9 @@ int main(int argc, char** argv)
                                 pal_scroll_up = true;
 							else if (ke->keycode == a5::Keyboard::Key::Down)
                                 pal_scroll_down = true;
+
+							if (pal_scroll_up || pal_scroll_down)
+								pal_scrolled = 0;
 						}
 						else if (ke->SubType() == a5::Keyboard::Event::Up)
 						{
@@ -1212,6 +1221,11 @@ int main(int argc, char** argv)
 				map_renderer.RebuildTarget(map_display.Width() / map_window_scale, map_display.Height() / map_window_scale);
 			}
 
+			if (map_scrolled == 0 || pal_scrolled == 0)
+			{
+				timer.Start();
+			}
+
 			if (redraw)
 			{
 				map_renderer.target.Target();
@@ -1266,6 +1280,12 @@ int main(int argc, char** argv)
 
 				if (map_renderer.gfxloader.frame_load_allocation > 0)
 					redraw = false;
+
+				if (map_scrolled != -1)
+				{
+					if (++map_scrolled == 120)
+						map_scrolled = -1;
+				}
 			}
 
 			if (pal_redraw)
@@ -1294,10 +1314,7 @@ int main(int argc, char** argv)
 
 				if (pal_scrolled != -1)
 				{
-					if (pal_scrolled == 0)
-						timer.Start();
-
-					int alpha = 220 - (++pal_scrolled * 2);
+					int alpha = 240 - (++pal_scrolled * 2);
 					if (pal_scrolled < 30) alpha = 160;
 
 					float f = pal_renderer.yoff;
@@ -1306,11 +1323,8 @@ int main(int argc, char** argv)
 
 					al_draw_line(634, f + 36, 634, f + 66, a5::Color(a5::RGBA(255, 255, 255, alpha)), 4.0f);
 
-					if (alpha <= 0)
-					{
+					if (pal_scrolled == 120)
 						pal_scrolled = -1;
-						timer.Stop();
-					}
 				}
 
 				if (pal_renderer.gfxloader.frame_load_allocation > 0)
@@ -1318,6 +1332,11 @@ int main(int argc, char** argv)
 
 				pal_renderer.target.Flip();
 				a5::disable_auto_target = false;
+			}
+
+			if (map_scrolled < 0 && pal_scrolled < 0)
+			{
+				timer.Stop();
 			}
 		}
 	}
