@@ -1145,6 +1145,7 @@ int main(int argc, char** argv)
 											map_renderer.highlight_spec = false;
 											pal_renderer.SetPal(i, pal[i]);
 											pal_load_boost = 1000;
+											pal_scrolled = 0;
 											break;
 										}
 									}
@@ -1159,6 +1160,7 @@ int main(int argc, char** argv)
 											map_renderer.highlight_spec = (i == 1);
 											pal_renderer.SetPal(8+i, pal[8+i]);
 											pal_load_boost = 1000;
+											pal_scrolled = 0;
 											break;
 										}
 									}
