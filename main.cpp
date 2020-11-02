@@ -316,7 +316,7 @@ int main(int argc, char** argv)
 	a5::Timer timer(60.0);
 	a5::Timer anim_timer(2.0);
 
-	std::string title("EO Map Editor 0.4.2 alpha");
+	std::string title("EO Map Editor 0.4.3 alpha");
 
 	a5::Event_Queue q;
 
@@ -598,6 +598,7 @@ int main(int argc, char** argv)
 			e = q.Wait();
 
 			bool ack_resize = false;
+			bool pal_ack_resize = false;
 
 			do
 			{
@@ -653,7 +654,6 @@ int main(int argc, char** argv)
 						else if (de->SubType() == a5::Display::Event::Resize)
 						{
 							ack_resize = true;
-							//mouse.SetRange(a5::Rectangle(0, 0, map_display.Width(), map_display.Height()));
 							redraw = true;
 						}
 						else if (de->SubType() == a5::Display::Event::Expose)
@@ -665,8 +665,7 @@ int main(int argc, char** argv)
 					{
 						if (de->SubType() == a5::Display::Event::Resize)
 						{
-							pal_display.AcknowledgeResize();
-							//mouse.SetRange(a5::Rectangle(0, 0, map_display.Width(), map_display.Height()));
+							pal_ack_resize = true;
 							pal_redraw = true;
 						}
 						else if (de->SubType() == a5::Display::Event::Expose)
@@ -1219,6 +1218,12 @@ int main(int argc, char** argv)
 				map_display.Target();
 				al_acknowledge_resize(map_display);
 				map_renderer.RebuildTarget(map_display.Width() / map_window_scale, map_display.Height() / map_window_scale);
+			}
+
+			if (pal_ack_resize)
+			{
+				pal_display.Target();
+				al_acknowledge_resize(pal_display);
 			}
 
 			if (map_scrolled == 0 || pal_scrolled == 0)
