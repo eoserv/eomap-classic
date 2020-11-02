@@ -377,6 +377,7 @@ int main(int argc, char** argv)
 
 			map_display.Target();
 			map.Load(filename);
+			map_renderer.ResetView();
 		}
 	};
 
@@ -493,7 +494,6 @@ int main(int argc, char** argv)
 
 							case MENU_FILE_OPEN:
 								load_map(0);
-								map_renderer.ResetView();
 								map_load_boost = 1000;
 								break;
 
@@ -792,7 +792,8 @@ int main(int argc, char** argv)
 								mouse_down = true;
 								if (pal_renderer.pal->layer < 9)
 								{
-									EO_Map::SetTile(map.gfxrows[pal_renderer.pal->layer], pal_renderer.pal->selected_tile, mouse_tile_x, mouse_tile_y);
+									if (pal_renderer.pal->selected_tile != 0 || pal_renderer.pal->layer == 0)
+										EO_Map::SetTile(map.gfxrows[pal_renderer.pal->layer], pal_renderer.pal->selected_tile, mouse_tile_x, mouse_tile_y);
 								}
 								else
 								{
@@ -1044,7 +1045,8 @@ int main(int argc, char** argv)
 									{
 										if (pal_renderer.pal->layer < 9)
 										{
-											EO_Map::SetTile(map.gfxrows[pal_renderer.pal->layer], pal_renderer.pal->selected_tile, mouse_tile_x, mouse_tile_y);
+											if (pal_renderer.pal->selected_tile != 0 || pal_renderer.pal->layer == 0)
+												EO_Map::SetTile(map.gfxrows[pal_renderer.pal->layer], pal_renderer.pal->selected_tile, mouse_tile_x, mouse_tile_y);
 										}
 										else if (pal_renderer.pal->selected_tile != 37)
 										{

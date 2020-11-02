@@ -6,7 +6,7 @@ extern std::string g_eo_install_path;
 
 std::unique_ptr<a5::Bitmap> GFX_Loader::Module::LoadBitmapUncached(int id)
 {
-	if (file_id == 3 && id == 100)
+	if (id == 100)
 	{
 		loader->blankbmp = al_load_bitmap("blank.bmp");
 		al_convert_mask_to_alpha(loader->blankbmp, al_map_rgb(255, 0, 255));
@@ -150,7 +150,7 @@ a5::Bitmap& GFX_Loader::Load(int file, int id, int anim)
 	if (cache_it != anim_cache.end())
 		return *cache_it->second;
 
-	if (frame_load_allocation-- < 0)
+	if (frame_load_allocation-- < 0 || id == 0)
 	{
 		if (!blankbmp)
 		{
