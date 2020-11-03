@@ -142,7 +142,7 @@ a5::Bitmap& GFX_Loader::Load(int file, int id, int anim)
 {
 	auto info = Info(file, id);
 
-	if ((file != 3 && file != 6) || info.width < 120)
+	if ((file != 3 && file != 6) || info.width < 128)
 		anim = 0;
 
 	auto cache_it = anim_cache.find(BmpFrame{file, id, anim});
@@ -182,12 +182,12 @@ a5::Bitmap& GFX_Loader::Load(int file, int id, int anim)
 	{
 		if (file == 3)
 		{
-			if (bmpw >= 120)
+			if (bmpw >= 128)
 				return a5::Rectangle(anim * 64, 0, anim * 64 + 64, 32);
 			else
 				return a5::Rectangle(0, 0, 64, 32);
 		}
-		else if (file == 6 && bmpw >= 120)
+		else if (file == 6 && bmpw >= 128)
 		{
 			auto frame_width = bmpw / 4;
 			return a5::Rectangle(anim * frame_width, 0, (anim + 1) * frame_width, bmph);
@@ -209,11 +209,6 @@ a5::Bitmap& GFX_Loader::Load(int file, int id, int anim)
 		if (anim_rect.Height() > 512)
 			anim_rect.y2 = anim_rect.y1 + 512;
 	}
-
-	// Graphics wider than 640 can't fit within the palette window
-
-	if (anim_rect.Width() > 640)
-		anim_rect.x2 = anim_rect.x1 + 640;
 
 	auto atlas_anim_bmp = atlas[anim]->Add(bmp, anim_rect);
 
