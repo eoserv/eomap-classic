@@ -479,6 +479,7 @@ const char *GUI::SaveFile()
 	ZeroMemory(&ofn, sizeof(ofn));
 	ofn.lStructSize = sizeof(ofn);
 	ofn.hwndOwner = this->wnd;
+	ofn.lpstrFile = gui_open_filename;
 	ofn.lpstrFile[0] = '\0';
 	ofn.nMaxFile = sizeof(gui_open_filename);
 	ofn.lpstrTitle = "Save Map File";
