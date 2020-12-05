@@ -10,7 +10,7 @@ int main(int argc, char** argv)
 	FILE* in = NULL;
 	FILE* out = NULL;
 
-	in = fopen(argv[2], "r");
+	in = fopen(argv[2], "rb");
 
 	if (!in)
 	{
@@ -18,7 +18,7 @@ int main(int argc, char** argv)
 		goto fail;
 	}
 
-	out = fopen(argv[3], "wt");
+	out = fopen(argv[3], "w");
 
 	if (!out)
 	{
