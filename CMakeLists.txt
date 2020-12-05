@@ -15,7 +15,7 @@ set(CMAKE_FIND_LIBRARY_SUFFIXES
 	"${CMAKE_SHARED_MODULE_SUFFIX}"
 )
 
-set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
+set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 find_package(PkgConfig REQUIRED)
 
@@ -113,13 +113,17 @@ if(CMAKE_CROSSCOMPILING)
 
 	execute_process(
 		COMMAND "${native_cmake_command}"
+		        -E env --unset=CC --unset=CXX
+		        "${native_cmake_command}"
 		        "-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}"
 				"${native_cmake_current_source_dir}"
 		WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/host_tools"
 	)
 
 	add_custom_target(host_tools
-		COMMAND "${CMAKE_COMMAND}" --build . --target host_tools --config "$<CONFIG>"
+		COMMAND "${CMAKE_COMMAND}"
+		        -E env --unset=CC --unset=CXX
+		        "${CMAKE_COMMAND}" --build . --target host_tools --config "$<CONFIG>"
 		WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/host_tools"
 	)
 
@@ -133,6 +137,8 @@ else()
 endif()
 
 # -----
+
+file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/generated)
 
 set(BUILTIN_DATA_SYMBOL builtin_data)
 set(BUILTIN_DATA_ARCHIVE "${CMAKE_CURRENT_BINARY_DIR}/generated/builtin.zip")
