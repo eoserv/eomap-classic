@@ -150,7 +150,7 @@ a5::Bitmap& GFX_Loader::Load(int file, int id, int anim)
 	if (cache_it != anim_cache.end())
 		return *cache_it->second;
 
-	if (frame_load_allocation-- < 0 || id == 0)
+	if (id == 0 || frame_load_allocation-- < 0)
 	{
 		if (!blankbmp)
 		{
