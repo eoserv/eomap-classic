@@ -339,6 +339,7 @@ static BOOL CALLBACK gui_dialog_proc(HWND dialog, UINT msg, WPARAM wparam, LPARA
 
 		case WM_CLOSE:
 			EndDialog(dialog, wparam);
+			DefWindowProc(dialog, msg, wparam, lparam);
 			break;
 
 		default:
