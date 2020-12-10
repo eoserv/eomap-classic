@@ -33,9 +33,9 @@ void Map_Renderer::Render()
 		}
 	}
 
-	int file_map[9] = {  3,  4,  5,  6,  6,  7,  3, 22, 5};
-	int xoff_map[9] = {  0,  0,  0,  0, 32, 32, 32,-54, 0};
-	int yoff_map[9] = {  0,  0,  0,  0,  0,-64,-32,-42, 0};
+	int file_map[9] = { 3,  4,  5,  6,  6,  7,  3, 22,  5 };
+	int xoff_map[9] = { 0, -2, -2,  0, 32,  0,  0,-24, -2 };
+	int yoff_map[9] = { 0, -2, -2, -1, -1,-64,-32,-12, -2 };
 
 	int starty = ((((this->yoff + 16) << 1) - (this->xoff)) >> 1) & INT_MAX;
 	int startx = (this->xoff + starty) & INT_MAX;
@@ -154,14 +154,14 @@ void Map_Renderer::Render()
 			int xoff = xoff_map[7] - this->xoff;
 			int yoff = yoff_map[7] - this->yoff;
 			short tile = map_flat[y * ((map->width + 1) * 9) + (x * 9) + 7];
-			//printf("\n%i\n", tile);
+
 			if (tile >= 0)
 			{
-				a5::Bitmap&gfx = this->gfxloader.Load(file_map[7], tile, animation_state);
+				a5::Bitmap& gfx = this->gfxloader.Load(file_map[7], tile, animation_state);
 				int gfx_w = gfx.Width();
 				int gfx_h = gfx.Height();
-				int draw_x = xoff + (x << 5) - (y << 5) + 32;
-				int draw_y = yoff + (x << 4) + (y << 4) + 32;
+				int draw_x = xoff + (x * 32) - (y * 32);
+				int draw_y = yoff + (x * 16) + (y * 16);
 
 				if ((draw_x + gfx_w) >= 0 && (draw_y + gfx_h) >= 0 && draw_x < target_w && draw_y < target_h)
 				{
@@ -237,32 +237,28 @@ void Map_Renderer::Render()
 
 		while (y >= 0 && x <= map->width)
 		{
-			for (int i = 1; i < 7; ++i)
+			for (int i : {6, 1, 3, 4, 2, 5})
 			{
-				if (i == 2) continue;
 				int xoff = xoff_map[i] - this->xoff;
 				int yoff = yoff_map[i] - this->yoff;
 				short tile = map_flat[y * ((map->width+1) * 9) + (x * 9) + i];
-				//printf("\n%i\n", tile);
+
 				if (tile >= 0)
 				{
-					a5::Bitmap&gfx = this->gfxloader.Load(file_map[i], tile, animation_state);
+					a5::Bitmap& gfx = this->gfxloader.Load(file_map[i], tile, animation_state);
 					int gfx_w = gfx.Width();
 					int gfx_h = gfx.Height();
-					int draw_x, draw_y;
-					draw_x = xoff + (x * 32) - (y * 32);
-					draw_y = yoff + (x * 16) + (y * 16);
-					int tile_w = int(gfx_w);
-					int tile_h = int(gfx_h);
-					draw_x -= tile_w / (1 + (i == 1)) - 32;
-					draw_y -= tile_h - 32;
+					int draw_x = xoff + (x * 32) - (y * 32);
+					int draw_y = yoff + (x * 16) + (y * 16);
+
+					if (i == 1 || i == 2)
+						draw_x -= gfx_w / 2 - 32;
+
+					draw_y -= gfx_h - 32;
 
 					if ((draw_x + gfx_w) >= 0 && (draw_y + gfx_h) >= 0 && draw_x < target_w && draw_y < target_h)
 					{
-						if (i == 7)
-							this->target.BlitTinted(gfx, a5::RGBA(255, 255, 255, 50), draw_x, draw_y);
-						else
-							this->target.Blit(gfx, draw_x, draw_y);
+						this->target.Blit(gfx, draw_x, draw_y);
 
 						if (this->gfxloader.IsError(gfx))
 						{
@@ -297,64 +293,19 @@ void Map_Renderer::Render()
 
 		while (y >= 0 && x <= map->width)
 		{
-			int xoff = xoff_map[2] - this->xoff;
-			int yoff = yoff_map[2] - this->yoff;
-			short tile = map_flat[y * ((map->width + 1) * 9) + (x * 9) + 2];
-			if (tile >= 0)
-			{
-				a5::Bitmap&gfx = this->gfxloader.Load(file_map[2], tile, animation_state);
-				int gfx_w = gfx.Width();
-				int gfx_h = gfx.Height();
-				int draw_x = xoff + (x << 5) - (y << 5) - ((int(gfx_w) >> 1) - 32);
-				int draw_y = yoff + (x << 4) + (y << 4) - ((int(gfx_h)) - 32);
-
-				if ((draw_x + gfx_w) >= 0 && (draw_y + gfx_h) >= 0 && draw_x < target_w && draw_y < target_h)
-				{
-					this->target.Blit(gfx, draw_x, draw_y);
-
-					if (this->gfxloader.IsError(gfx))
-					{
-						al_draw_textf(
-							font, al_map_rgb(255, 255, 255),
-							draw_x + 32, draw_y + 12, ALLEGRO_ALIGN_CENTER,
-							"%d/%d", 2, tile
-						);
-					}
-				}
-			}
-
-			--y;
-			++x;
-		}
-	}
-
-	// Players, NPCs etc here
-
-	for (int ii = 0; ii <= map->width + map->height; ++ii)
-	{
-		int x, y;
-		if (ii < map->height)
-		{
-			x = 0;
-			y = ii;
-		}
-		else
-		{
-			x = ii - map->height;
-			y = map->height;
-		}
-
-		while (y >= 0 && x <= map->width)
-		{
 			int xoff = xoff_map[8] - this->xoff;
 			int yoff = yoff_map[8] - this->yoff;
 			short tile = map_flat[y * ((map->width + 1) * 9) + (x * 9) + 8];
 			if (tile >= 0)
 			{
-				a5::Bitmap&gfx = this->gfxloader.Load(file_map[8], tile, animation_state);
+				a5::Bitmap& gfx = this->gfxloader.Load(file_map[8], tile, animation_state);
 				int gfx_w = gfx.Width();
-				int gfx_h = gfx.Height();				int draw_x = xoff + (x << 5) - (y << 5) - ((int(gfx_w) >> 1) - 32);
-				int draw_y = yoff + (x << 4) + (y << 4) - ((int(gfx_h)) - 32);
+				int gfx_h = gfx.Height();
+				int draw_x = xoff + (x * 32) - (y * 32);
+				int draw_y = yoff + (x * 16) + (y * 16);
+
+				draw_x -= gfx_w / 2 - 32;
+				draw_y -= gfx_h - 32;
 
 				if ((draw_x + gfx_w) >= 0 && (draw_y + gfx_h) >= 0 && draw_x < target_w && draw_y < target_h)
 				{
@@ -505,6 +456,7 @@ void Map_Renderer::Render()
             }
         }
 	}
+
     if (this->show_layers[9] || highlight_spec)
 	{
         for (std::vector<EO_Map::NPC>::iterator i = map->npcs.begin(); i != map->npcs.end(); ++i)
