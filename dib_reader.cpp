@@ -322,8 +322,12 @@ void dib_reader::read_rgb_line(char* outbuf, int row) noexcept
 		std::uint8_t g = gtable[((pixel >> gs) & gm)];
 		std::uint8_t b = btable[((pixel >> bs) & bm)];
 
-		// ignore alpha bits -- use black as a mask instead
-		std::uint8_t a = ((r|g|b) != 0) * 0xFF;
+		// ignore alpha bits -- use color mask instead
+		std::uint32_t rgbpixel = (std::uint32_t(r) << 16)
+		                       | (std::uint32_t(g) <<  8)
+		                       | (std::uint32_t(b)      );
+
+		std::uint8_t a = (rgbpixel == mask_color) ? 0x00 : 0xFF;
 
 		outbuf[0] = b;
 		outbuf[1] = g;
@@ -371,8 +375,12 @@ void dib_reader::read_pal_line(char* outbuf, int row) noexcept
 			std::uint8_t g = gtable[((pixel >> gs) & 0xFF)];
 			std::uint8_t b = btable[((pixel >> bs) & 0xFF)];
 
-			// ignore alpha bits -- use black as a mask instead
-			std::uint8_t a = ((r|g|b) != 0) * 0xFF;
+			// ignore alpha bits -- use color mask instead
+			std::uint32_t rgbpixel = (std::uint32_t(r) << 16)
+			                       | (std::uint32_t(g) <<  8)
+			                       | (std::uint32_t(b)      );
+
+			std::uint8_t a = (rgbpixel == mask_color) ? 0x00 : 0xFF;
 
 			outbuf[0] = b;
 			outbuf[1] = g;

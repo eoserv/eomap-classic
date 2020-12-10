@@ -1,4 +1,5 @@
 #include "GFX_Loader.hpp"
+#include "bmp_reader.hpp"
 #include "cio.hpp"
 #include "dib_reader.hpp"
 #include "common.hpp"
@@ -13,8 +14,7 @@ std::unique_ptr<a5::Bitmap> GFX_Loader::Module::LoadBitmapUncached(int id)
 	{
 		if (!loader->errbmp)
 		{
-			loader->errbmp = al_load_bitmap("error.bmp");
-			al_convert_mask_to_alpha(loader->errbmp, al_map_rgb(255, 0, 255));
+			loader->errbmp = load_bmp("error.bmp").Release();
 		}
 
 		if (!loader->errbmp_ptr)
@@ -39,8 +39,7 @@ std::unique_ptr<a5::Bitmap> GFX_Loader::Module::LoadBitmapUncached(int id)
 
 		if (!loader->errbmp)
 		{
-			loader->errbmp = al_load_bitmap("error.bmp");
-			al_convert_mask_to_alpha(loader->errbmp, al_map_rgb(255, 0, 255));
+			loader->errbmp = load_bmp("error.bmp").Release();
 		}
 
 		if (!loader->errbmp_ptr)
@@ -228,8 +227,7 @@ a5::Bitmap& GFX_Loader::LoadRaw(std::string filename)
 	if (cache_it != raw_bmp_cache.end())
 		return *cache_it->second;
 
-	auto graphic = std::make_unique<a5::Bitmap>(filename.c_str());
-	al_convert_mask_to_alpha(*graphic, al_map_rgb(255, 0, 255));
+	auto graphic = std::make_unique<a5::Bitmap>(load_bmp(filename.c_str()));
 	auto emplace_result = raw_bmp_cache.emplace(filename, std::move(graphic));
 	return *emplace_result.first->second;
 }

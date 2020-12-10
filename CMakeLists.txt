@@ -21,10 +21,8 @@ find_package(PkgConfig REQUIRED)
 
 pkg_check_modules(ALLEGRO5            REQUIRED IMPORTED_TARGET allegro-static-5)
 pkg_check_modules(ALLEGRO5_FONT       REQUIRED IMPORTED_TARGET allegro_font-static-5)
-pkg_check_modules(ALLEGRO5_IMAGE      REQUIRED IMPORTED_TARGET allegro_image-static-5)
 pkg_check_modules(ALLEGRO5_PRIMITIVES REQUIRED IMPORTED_TARGET allegro_primitives-static-5)
 pkg_check_modules(ALLEGRO5_DIALOG     REQUIRED IMPORTED_TARGET allegro_dialog-static-5)
-pkg_check_modules(ALLEGRO5_PHYSFS     REQUIRED IMPORTED_TARGET allegro_physfs-static-5)
 pkg_check_modules(PHYSFS              REQUIRED IMPORTED_TARGET physfs)
 
 # ---
@@ -49,10 +47,8 @@ add_library(a5ses STATIC
 target_link_libraries(a5ses PUBLIC
 	PkgConfig::ALLEGRO5_STATIC
 	PkgConfig::ALLEGRO5_FONT_STATIC
-	PkgConfig::ALLEGRO5_IMAGE_STATIC
 	PkgConfig::ALLEGRO5_PRIMITIVES_STATIC
 	PkgConfig::ALLEGRO5_DIALOG_STATIC
-	PkgConfig::ALLEGRO5_PHYSFS_STATIC
 	PkgConfig::PHYSFS_STATIC
 )
 
@@ -62,9 +58,12 @@ target_include_directories(a5ses PUBLIC a5ses/include)
 target_include_directories(a5ses PRIVATE a5ses/include/a5ses)
 
 add_executable(eomap4
+	bmp_reader.cpp
+	bmp_reader.hpp
 	common.hpp
 	cio.cpp
 	cio.hpp
+	cio_physfs.hpp
 	crc32.c
 	crc32.h
 	dib_reader.cpp

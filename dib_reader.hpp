@@ -44,6 +44,8 @@ class dib_reader
 
 		read_line_fn_t read_line_fn;
 
+		std::uint32_t mask_color = 0x000000; // 0xRRGGBB
+
 		std::uint8_t read_u8(size_t offset) const noexcept
 		{
 			char a = data_ptr[offset];

@@ -70,9 +70,11 @@ class stream
 		}
 
 		stream(stream&& other) noexcept
+			: fh(other.fh)
+			, m_unowned(other.m_unowned)
 		{
-			fh = other.fh;
 			other.fh = nullptr;
+			other.m_unowned = true;
 		}
 
 		stream(const stream&) = delete;
@@ -118,7 +120,7 @@ class stream
 
 		std::FILE* release() noexcept
 		{
-			FILE* temp_fh = fh;
+			std::FILE* temp_fh = fh;
 			fh = nullptr;
 			return temp_fh;
 		}
@@ -454,7 +456,7 @@ namespace std
 		
 		size_t operator()(const ::cio::stream& io) const noexcept
 		{
-			return hash<const FILE*>()(io.handle());
+			return hash<const std::FILE*>()(io.handle());
 		}
 	};
 

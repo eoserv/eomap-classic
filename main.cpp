@@ -1,6 +1,5 @@
 
 #include "common.hpp"
-#include <allegro5/allegro_physfs.h>
 #include <physfs.h>
 
 #include "EO_Map.hpp"
@@ -10,6 +9,7 @@
 #include "GUI.hpp"
 #endif // WIN32
 #include "eodata.hpp"
+#include "bmp_reader.hpp"
 
 #include "resource.h"
 
@@ -285,8 +285,6 @@ int main(int argc, char** argv)
 		return 1;
 	}
 
-	al_set_physfs_file_interface();
-
 	//al_register_assert_handler(ah);
 
 
@@ -427,12 +425,11 @@ int main(int argc, char** argv)
 		int map_scrolled = -1;
 
 		map_display.Target();
-		a5::Bitmap cursor(a5::Bitmap("cursor.bmp"));
-		al_convert_mask_to_alpha(cursor, a5::Color(a5::RGB(255, 0, 255)));
+		a5::Bitmap cursor(load_bmp("cursor.bmp"));
 
 		pal_display.Target();
-		a5::Bitmap palhead(a5::Bitmap("palhead.bmp"));
-		a5::Bitmap palfoot(a5::Bitmap("palfoot.bmp"));
+		a5::Bitmap palhead(load_bmp("palhead.bmp"));
+		a5::Bitmap palfoot(load_bmp("palfoot.bmp"));
 
 		int mouse_tile_x = 0;
 		int mouse_tile_y = 0;

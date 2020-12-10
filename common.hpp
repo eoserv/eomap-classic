@@ -14,10 +14,10 @@
 #include <memory>
 
 #include <cstdlib>
+#include <cstdint>
 #include <cstdio>
 #include <cstring>
 
-#define A5SES_IMAGE_ADDON
 #define A5SES_FONT_ADDON
 #include <a5ses/a5ses.hpp>
 #include <allegro5/allegro_font.h>
