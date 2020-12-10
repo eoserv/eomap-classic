@@ -6,17 +6,6 @@ extern std::string g_eo_install_path;
 
 std::unique_ptr<a5::Bitmap> GFX_Loader::Module::LoadBitmapUncached(int id)
 {
-	if (id == 100)
-	{
-		loader->blankbmp = al_load_bitmap("blank.bmp");
-		al_convert_mask_to_alpha(loader->blankbmp, al_map_rgb(255, 0, 255));
-
-		if (!loader->blankbmp_ptr)
-			loader->blankbmp_ptr = std::make_unique<a5::Bitmap>(loader->blankbmp);
-
-		return std::make_unique<a5::Bitmap>(loader->blankbmp, false);
-	}
-
 	auto bmp_table_it = bmp_table.find(id);
 
 	if (bmp_table_it == bmp_table.end())
@@ -152,15 +141,15 @@ a5::Bitmap& GFX_Loader::Load(int file, int id, int anim)
 
 	if (id == 0 || frame_load_allocation-- < 0)
 	{
-		if (!blankbmp)
+		if (!nullbmp)
 		{
-			blankbmp = al_create_bitmap(0, 0);
+			nullbmp = al_create_bitmap(1, 1);
 		}
 
-		if (!blankbmp_ptr)
-			blankbmp_ptr = std::make_unique<a5::Bitmap>(blankbmp);
+		if (!nullbmp_ptr)
+			nullbmp_ptr = std::make_unique<a5::Bitmap>(nullbmp);
 
-		return *blankbmp_ptr;
+		return *nullbmp_ptr;
 	}
 
 	bool held = al_is_bitmap_drawing_held();
