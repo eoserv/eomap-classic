@@ -105,7 +105,7 @@ class EO_Map
 
 		struct Unknown_1
 		{
-			unsigned char data[5];
+			unsigned char data[4];
 		};
 
 		std::vector<Unknown_1> unknown1s;
