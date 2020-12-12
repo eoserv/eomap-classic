@@ -155,15 +155,15 @@ void EO_Map::Load(std::string filename)
 	SAFE_READ(buf, sizeof(char), 1, fh);
 	outersize = EON(buf[0]);
 	this->unknown1s.resize(outersize);
-	SAFE_READ(buf, sizeof(char), outersize * 5, fh);
+	SAFE_READ(buf, sizeof(char), outersize * 4, fh);
 	p = 0;
 	for (int i = 0; i < outersize; ++i)
 	{
-		for (int ii = 0; ii < 5; ++ii)
+		for (int ii = 0; ii < 4; ++ii)
 		{
 			this->unknown1s[i].data[ii] = EON(buf[p + ii]);
 		}
-		p += 5;
+		p += 4;
 	}
 
 	SAFE_READ(buf, sizeof(char), 1, fh);
@@ -342,7 +342,7 @@ void EO_Map::Save(std::string filename)
 	ENC_WRITE(this->unknown1s.size(), sizeof(char), 1, fh);
 	for (std::vector<EO_Map::Unknown_1>::iterator i = this->unknown1s.begin(); i != this->unknown1s.end(); ++i)
 	{
-		for (int ii = 0; ii < 5; ++ii)
+		for (int ii = 0; ii < 4; ++ii)
 		{
 			ENC_WRITE(i->data[ii], sizeof(char), 1, fh);
 		}
