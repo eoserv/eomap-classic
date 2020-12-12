@@ -1,6 +1,7 @@
 #include "GFX_Loader.hpp"
 #include "cio.hpp"
 #include "dib_reader.hpp"
+#include "common.hpp"
 
 extern std::string g_eo_install_path;
 
@@ -130,8 +131,9 @@ pe_reader::BitmapInfo GFX_Loader::Info(int file, int id)
 a5::Bitmap& GFX_Loader::Load(int file, int id, int anim)
 {
 	auto info = Info(file, id);
+	bool is_animation = (file == 3 || file == 6) && info.width >= 128;
 
-	if ((file != 3 && file != 6) || info.width < 128)
+	if (!is_animation)
 		anim = 0;
 
 	auto cache_it = anim_cache.find(BmpFrame{file, id, anim});
@@ -139,7 +141,14 @@ a5::Bitmap& GFX_Loader::Load(int file, int id, int anim)
 	if (cache_it != anim_cache.end())
 		return *cache_it->second;
 
-	if (id == 0 || frame_load_allocation-- < 0)
+	bool is_partially_loaded_animation = is_animation &&
+		std::find_if(
+			anim_cache.begin(),
+			anim_cache.end(),
+			[file, id](auto& entry) { return entry.first.file == file && entry.first.id == id; }
+		) != anim_cache.end();
+
+	if (id == 0 || (frame_load_allocation-- < 0 && !is_partially_loaded_animation))
 	{
 		if (!nullbmp)
 		{
