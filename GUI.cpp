@@ -75,13 +75,13 @@ static BOOL CALLBACK gui_dialog_proc(HWND dialog, UINT msg, WPARAM wparam, LPARA
                     SetDlgItemInt(dialog, DIALOG_MAP_PROPERTIES_MUSIC_TRACK, gui->dialog_map_music_track, FALSE);
                     SetDlgItemInt(dialog, DIALOG_MAP_PROPERTIES_MUSIC_AMBIENT, gui->dialog_map_music_ambient, FALSE);
                     /* Music control adding */
-                    SendDlgItemMessage(dialog, DIALOG_MAP_PROPERTIES_MUSIC_CONTROL, CB_ADDSTRING, 0, (LPARAM)"0 - ?");
-                    SendDlgItemMessage(dialog, DIALOG_MAP_PROPERTIES_MUSIC_CONTROL, CB_ADDSTRING, 0, (LPARAM)"1 - ?");
-                    SendDlgItemMessage(dialog, DIALOG_MAP_PROPERTIES_MUSIC_CONTROL, CB_ADDSTRING, 0, (LPARAM)"2 - ?");
-                    SendDlgItemMessage(dialog, DIALOG_MAP_PROPERTIES_MUSIC_CONTROL, CB_ADDSTRING, 0, (LPARAM)"3 - ?");
-                    SendDlgItemMessage(dialog, DIALOG_MAP_PROPERTIES_MUSIC_CONTROL, CB_ADDSTRING, 0, (LPARAM)"4 - ?");
-                    SendDlgItemMessage(dialog, DIALOG_MAP_PROPERTIES_MUSIC_CONTROL, CB_ADDSTRING, 0, (LPARAM)"5 - ?");
-                    SendDlgItemMessage(dialog, DIALOG_MAP_PROPERTIES_MUSIC_CONTROL, CB_ADDSTRING, 0, (LPARAM)"6 - ?");
+                    SendDlgItemMessage(dialog, DIALOG_MAP_PROPERTIES_MUSIC_CONTROL, CB_ADDSTRING, 0, (LPARAM)"Stop Different, Play Once");
+                    SendDlgItemMessage(dialog, DIALOG_MAP_PROPERTIES_MUSIC_CONTROL, CB_ADDSTRING, 0, (LPARAM)"Stop Any, Play Once");
+                    SendDlgItemMessage(dialog, DIALOG_MAP_PROPERTIES_MUSIC_CONTROL, CB_ADDSTRING, 0, (LPARAM)"Song Ends, Play Once");
+                    SendDlgItemMessage(dialog, DIALOG_MAP_PROPERTIES_MUSIC_CONTROL, CB_ADDSTRING, 0, (LPARAM)"Stop Different, Play Repeat");
+                    SendDlgItemMessage(dialog, DIALOG_MAP_PROPERTIES_MUSIC_CONTROL, CB_ADDSTRING, 0, (LPARAM)"Stop Any, Play Repeat");
+                    SendDlgItemMessage(dialog, DIALOG_MAP_PROPERTIES_MUSIC_CONTROL, CB_ADDSTRING, 0, (LPARAM)"Song Ends, Play Repeat");
+                    SendDlgItemMessage(dialog, DIALOG_MAP_PROPERTIES_MUSIC_CONTROL, CB_ADDSTRING, 0, (LPARAM)"Stop - No Music");
                     /* End of music control adding */
                     SendDlgItemMessage(dialog, DIALOG_MAP_PROPERTIES_MUSIC_CONTROL, CB_SETCURSEL, gui->dialog_map_music_control, 0);
                     /* End of music setting */
