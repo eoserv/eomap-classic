@@ -21,6 +21,10 @@
 	q.Register(mouse); \
 	q.Register(timer); \
 	q.Register(anim_timer); \
+	for (std::unique_ptr<EyedropperAnimation>& animation : eyedropper_animations) \
+	{ \
+		q.Register(animation->timer); \
+	} \
 	al_register_event_source(q, al_menu_source); \
 }
 
@@ -32,8 +36,35 @@
 	q.Unregister(mouse); \
 	q.Unregister(timer); \
 	q.Unregister(anim_timer); \
+	for (std::unique_ptr<EyedropperAnimation>& animation : eyedropper_animations) \
+	{ \
+		q.Unregister(animation->timer); \
+	} \
 	al_unregister_event_source(q, al_menu_source); \
 }
+
+struct EyedropperAnimation
+{
+	int x;
+	int y;
+	int frame;
+	a5::Timer timer;
+
+	EyedropperAnimation(int x_, int y_)
+		: x(x_)
+		, y(y_)
+		, frame(0)
+		, timer(a5::Timer(10.0))
+	{ 
+		timer.Start();
+	}
+
+	bool Finished()
+	{
+		return frame == 5;
+	}
+};
+
 /*
 void ah(const char* expr, const char* file, int line, const char* func)
 {
@@ -42,6 +73,7 @@ void ah(const char* expr, const char* file, int line, const char* func)
 	std::abort();
 }
 */
+
 static void print_physfs_error()
 {
 	std::string str;
@@ -339,6 +371,9 @@ int main(int argc, char** argv)
 	Map_Renderer map_renderer(map_display, font);
 	Palette pal[10] = {3, 4, 5, 6, 6, 7, 3, 22, 5, -1};
 	Pal_Renderer pal_renderer(pal_display);
+	
+	std::list<std::unique_ptr<EyedropperAnimation>> eyedropper_animations;
+
 	float map_window_scale = 1.0f;
 	ALLEGRO_TRANSFORM identity_xform;
 	ALLEGRO_TRANSFORM map_scale_xform;
@@ -356,6 +391,8 @@ int main(int argc, char** argv)
 #ifdef WIN32
 	auto load_map = [&](const char *filename)
 	{
+		eyedropper_animations.clear();
+
 		if (!filename)
 		{
 			Q_UNREGISTER_ALL()
@@ -413,6 +450,7 @@ int main(int argc, char** argv)
 		bool pal_scroll_up = false, pal_scroll_down = false;
 		bool mouse_down = false;
 		bool mouse_r_down = false;
+		bool ctrl_down = false;
 
 		running = true;
 		bool redraw = true;
@@ -426,6 +464,7 @@ int main(int argc, char** argv)
 
 		map_display.Target();
 		a5::Bitmap cursor(load_bmp("cursor.bmp"));
+		a5::Bitmap eyedropper(load_bmp("eyedropper.bmp"));
 
 		pal_display.Target();
 		a5::Bitmap palhead(load_bmp("palhead.bmp"));
@@ -639,6 +678,28 @@ int main(int argc, char** argv)
 						pal_renderer.animation_state = (pal_renderer.animation_state + 1) & 0x3;
 						pal_redraw = true;
 					}
+					else
+					{
+						auto animation_it = std::find_if(
+							eyedropper_animations.begin(),
+							eyedropper_animations.end(),
+							[te](const auto& animation) { return te->source == &animation->timer; }
+						);
+
+						if (animation_it != eyedropper_animations.end())
+						{
+							std::unique_ptr<EyedropperAnimation>& animation = *animation_it;
+							++animation->frame;
+
+							if (animation->Finished())
+							{
+								q.Unregister(animation->timer);
+								eyedropper_animations.erase(animation_it);
+							}
+							
+							redraw = true;
+						}
+					}
 				}
 				else if ((de = dynamic_cast<a5::Display::Event *>(e.get())))
 				{
@@ -767,10 +828,12 @@ int main(int argc, char** argv)
 					{
 						if (ke->SubType() == a5::Keyboard::Event::Down)
 						{
+							ctrl_down = true;
 							scroll_multiplier = 2;
 						}
 						else if (ke->SubType() == a5::Keyboard::Event::Up)
 						{
+							ctrl_down = false;
 							scroll_multiplier = 1;
 						}
 					}
@@ -784,7 +847,30 @@ int main(int argc, char** argv)
 							if (me->button == a5::Mouse::Left)
 							{
 								mouse_down = true;
-								if (pal_renderer.pal->layer < 9)
+								if (ctrl_down && pal_renderer.pal->layer < 9)
+								{
+									auto gfx = EO_Map::GetTile(
+										map.gfxrows[pal_renderer.pal->layer],
+										mouse_tile_x,
+										mouse_tile_y
+									);
+									
+									if (gfx)
+									{
+										auto animation = std::make_unique<EyedropperAnimation>(
+											mouse_tile_x,
+											mouse_tile_y
+										);
+										
+										q.Register(animation->timer);
+										eyedropper_animations.push_back(std::move(animation));
+										pal_renderer.pal->selected_tile = gfx->tile;
+
+										redraw = true;
+										pal_redraw = true;
+									}
+								}
+								else if (pal_renderer.pal->layer < 9)
 								{
 									if (pal_renderer.pal->selected_tile != 0 || pal_renderer.pal->layer == 0)
 										EO_Map::SetTile(map.gfxrows[pal_renderer.pal->layer], pal_renderer.pal->selected_tile, mouse_tile_x, mouse_tile_y);
@@ -1035,7 +1121,7 @@ int main(int argc, char** argv)
 
 								if (mouse_inrange)
 								{
-									if (mouse_down)
+									if (mouse_down && !ctrl_down)
 									{
 										if (pal_renderer.pal->layer < 9)
 										{
@@ -1260,6 +1346,18 @@ int main(int argc, char** argv)
 						int mouse_draw_x = (mouse_tile_x << 5) - (mouse_tile_y << 5) - map_renderer.xoff;
 						int mouse_draw_y = (mouse_tile_x << 4) + (mouse_tile_y << 4) - map_renderer.yoff;
 						map_renderer.target.Blit(cursor, mouse_draw_x, mouse_draw_y);
+					}
+
+					for (std::unique_ptr<EyedropperAnimation>& animation : eyedropper_animations)
+					{
+						int mouse_draw_x = (animation->x << 5) - (animation->y << 5) - map_renderer.xoff;
+						int mouse_draw_y = (animation->x << 4) + (animation->y << 4) - map_renderer.yoff;
+						map_renderer.target.Blit(
+							eyedropper,
+							mouse_draw_x,
+							mouse_draw_y,
+							a5::Rectangle(animation->frame * 64, 0, (animation->frame + 1) * 64, 32)
+						);
 					}
 
 					al_hold_bitmap_drawing(false);
