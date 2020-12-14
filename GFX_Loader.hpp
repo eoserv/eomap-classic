@@ -52,7 +52,14 @@ class GFX_Loader
 		std::unique_ptr<a5::Bitmap> errbmp_ptr = nullptr;
 
 	public:
-		int frame_load_allocation = 0;
+		double frame_load_until = 0.0;
+
+		// Number of Load() calls that soft-failed since the last SetLoadTime()
+		// call due to load time allocation being exceeded
+		int dummy_frames_loaded = 0;
+
+		void SetLoadTime(double secs);
+		bool CanLoadFrames() const;
 
 		GFX_Loader() { Reset(); }
 

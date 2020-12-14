@@ -104,6 +104,17 @@ GFX_Loader::Module& GFX_Loader::LoadModule(int file)
 	return emplace_result.first->second;
 }
 
+void GFX_Loader::SetLoadTime(double secs)
+{
+	this->frame_load_until = al_get_time() + secs;
+	this->dummy_frames_loaded = 0;
+}
+
+bool GFX_Loader::CanLoadFrames() const
+{
+	return (this->frame_load_until - al_get_time()) > 0.0;
+}
+
 void GFX_Loader::Prepare(int file)
 {
 	LoadModule(file);
@@ -147,7 +158,12 @@ a5::Bitmap& GFX_Loader::Load(int file, int id, int anim)
 			[file, id](auto& entry) { return entry.first.file == file && entry.first.id == id; }
 		) != anim_cache.end();
 
-	if (id == 0 || (frame_load_allocation-- < 0 && !is_partially_loaded_animation))
+	bool can_load = (CanLoadFrames() || is_partially_loaded_animation);
+
+	if (!can_load)
+		++this->dummy_frames_loaded;
+
+	if (id == 0 || !can_load)
 	{
 		if (!nullbmp)
 		{

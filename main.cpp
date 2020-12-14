@@ -418,8 +418,8 @@ int main(int argc, char** argv)
 		bool redraw = true;
 		bool pal_redraw = true;
 
-		int map_load_boost = 1000;
-		int pal_load_boost = 1000;
+		double map_load_boost = 0.5; // 500ms
+		double pal_load_boost = 0.5; // 500ms
 
 		int pal_scrolled = -1;
 		int map_scrolled = -1;
@@ -491,7 +491,7 @@ int main(int argc, char** argv)
 
 							case MENU_FILE_OPEN:
 								load_map(0);
-								map_load_boost = 1000;
+								map_load_boost = 1.0; // 1000ms
 								break;
 
 							case MENU_FILE_SAVE:
@@ -1140,7 +1140,7 @@ int main(int argc, char** argv)
 											pal_display.Target();
 											map_renderer.highlight_spec = false;
 											pal_renderer.SetPal(i, pal[i]);
-											pal_load_boost = 1000;
+											pal_load_boost = 0.5; // 500ms
 											pal_scrolled = 0;
 											break;
 										}
@@ -1155,7 +1155,7 @@ int main(int argc, char** argv)
 											pal_display.Target();
 											map_renderer.highlight_spec = (i == 1);
 											pal_renderer.SetPal(8+i, pal[8+i]);
-											pal_load_boost = 1000;
+											pal_load_boost = 0.5; // 500ms
 											pal_scrolled = 0;
 											break;
 										}
@@ -1228,14 +1228,27 @@ int main(int argc, char** argv)
 				timer.Start();
 			}
 
+			double frame_load_time = 0.025; // 25ms
+
+			// Allocation is shared between both windows
+			if (redraw)
+			{
+				map_renderer.gfxloader.SetLoadTime(frame_load_time + map_load_boost);
+				map_load_boost = 0.0;
+			}
+
+			if (pal_redraw)
+			{
+				pal_renderer.gfxloader.SetLoadTime(frame_load_time + pal_load_boost);
+				pal_load_boost = 0.0;
+			}
+
 			if (redraw)
 			{
 				map_renderer.target.Target();
 				a5::disable_auto_target = true;
 				map_renderer.target.Clear();
 
-				map_renderer.gfxloader.frame_load_allocation = 100 + map_load_boost;
-				map_load_boost = 0;
 				if (map.loaded)
 				{
 					al_hold_bitmap_drawing(true);
@@ -1280,7 +1293,7 @@ int main(int argc, char** argv)
 				map_display.Flip();
 				a5::disable_auto_target = false;
 
-				if (map_renderer.gfxloader.frame_load_allocation > 0)
+				if (map_renderer.gfxloader.dummy_frames_loaded == 0)
 					redraw = false;
 
 				if (map_scrolled != -1)
@@ -1295,11 +1308,11 @@ int main(int argc, char** argv)
 				pal_renderer.target.Target();
 				a5::disable_auto_target = true;
 
-				if (pal_renderer.pal->layer == 7) pal_display.Clear(a5::RGB(128, 128, 128));
-				else pal_display.Clear(a5::RGB(0, 0, 0));
+				if (pal_renderer.pal->layer == 7)
+					pal_display.Clear(a5::RGB(128, 128, 128));
+				else
+					pal_display.Clear(a5::RGB(0, 0, 0));
 
-				pal_renderer.gfxloader.frame_load_allocation = 20 + pal_load_boost;
-				pal_load_boost = 0;
 				pal_renderer.Render();
 
 				pal_display.Blit(palhead, 0, 0);
@@ -1329,7 +1342,7 @@ int main(int argc, char** argv)
 						pal_scrolled = -1;
 				}
 
-				if (pal_renderer.gfxloader.frame_load_allocation > 0)
+				if (pal_renderer.gfxloader.dummy_frames_loaded == 0)
 					pal_redraw = false;
 
 				pal_renderer.target.Flip();
