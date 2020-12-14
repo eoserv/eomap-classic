@@ -314,7 +314,7 @@ int main(int argc, char** argv)
 	a5::Timer timer(60.0);
 	a5::Timer anim_timer(2.0);
 
-	std::string title("EO Map Editor 0.4.3 alpha");
+	std::string title("EO Map Editor 0.4.4 alpha");
 
 	a5::Event_Queue q;
 
