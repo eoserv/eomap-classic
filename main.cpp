@@ -21,10 +21,6 @@
 	q.Register(mouse); \
 	q.Register(timer); \
 	q.Register(anim_timer); \
-	for (std::unique_ptr<EyedropperAnimation>& animation : eyedropper_animations) \
-	{ \
-		q.Register(animation->timer); \
-	} \
 	al_register_event_source(q, al_menu_source); \
 }
 
@@ -36,32 +32,33 @@
 	q.Unregister(mouse); \
 	q.Unregister(timer); \
 	q.Unregister(anim_timer); \
-	for (std::unique_ptr<EyedropperAnimation>& animation : eyedropper_animations) \
-	{ \
-		q.Unregister(animation->timer); \
-	} \
 	al_unregister_event_source(q, al_menu_source); \
 }
 
 struct EyedropperAnimation
 {
+	static constexpr int FrameCount = 5;
+
 	int x;
 	int y;
 	int frame;
-	a5::Timer timer;
+	double prev_frame_start;
 
 	EyedropperAnimation(int x_, int y_)
 		: x(x_)
 		, y(y_)
 		, frame(0)
-		, timer(a5::Timer(10.0))
-	{ 
-		timer.Start();
-	}
+		, prev_frame_start(a5::Time())
+	{ }
 
 	bool Finished()
 	{
-		return frame == 5;
+		return frame == FrameCount;
+	}
+
+	double FrameInterval()
+	{
+		return 0.5 / FrameCount;
 	}
 };
 
@@ -372,7 +369,7 @@ int main(int argc, char** argv)
 	Palette pal[10] = {3, 4, 5, 6, 6, 7, 3, 22, 5, -1};
 	Pal_Renderer pal_renderer(pal_display);
 	
-	std::list<std::unique_ptr<EyedropperAnimation>> eyedropper_animations;
+	std::list<EyedropperAnimation> eyedropper_animations;
 
 	float map_window_scale = 1.0f;
 	ALLEGRO_TRANSFORM identity_xform;
@@ -651,6 +648,28 @@ int main(int argc, char** argv)
 				{
 					if (te->source == &timer)
 					{
+						auto animation = eyedropper_animations.begin();
+
+						while (animation != eyedropper_animations.end())
+						{
+							double now = a5::Time();
+
+							if (now - animation->prev_frame_start >= animation->FrameInterval())
+							{
+								animation->prev_frame_start = now;
+								++animation->frame;
+								redraw = true;
+
+								if (animation->Finished())
+								{
+									animation = eyedropper_animations.erase(animation);
+									continue;
+								}
+							}
+
+							++animation;
+						}
+
 						if (map.loaded)
 						{
 							if (scroll_up) { map_renderer.yoff -= 8 * scroll_multiplier; map_scrolled = 0; redraw = true; }
@@ -677,28 +696,6 @@ int main(int argc, char** argv)
 
 						pal_renderer.animation_state = (pal_renderer.animation_state + 1) & 0x3;
 						pal_redraw = true;
-					}
-					else
-					{
-						auto animation_it = std::find_if(
-							eyedropper_animations.begin(),
-							eyedropper_animations.end(),
-							[te](const auto& animation) { return te->source == &animation->timer; }
-						);
-
-						if (animation_it != eyedropper_animations.end())
-						{
-							std::unique_ptr<EyedropperAnimation>& animation = *animation_it;
-							++animation->frame;
-
-							if (animation->Finished())
-							{
-								q.Unregister(animation->timer);
-								eyedropper_animations.erase(animation_it);
-							}
-							
-							redraw = true;
-						}
 					}
 				}
 				else if ((de = dynamic_cast<a5::Display::Event *>(e.get())))
@@ -857,13 +854,7 @@ int main(int argc, char** argv)
 									
 									if (gfx)
 									{
-										auto animation = std::make_unique<EyedropperAnimation>(
-											mouse_tile_x,
-											mouse_tile_y
-										);
-										
-										q.Register(animation->timer);
-										eyedropper_animations.push_back(std::move(animation));
+										eyedropper_animations.emplace_back(mouse_tile_x, mouse_tile_y);
 										pal_renderer.pal->selected_tile = gfx->tile;
 
 										redraw = true;
@@ -1309,7 +1300,7 @@ int main(int argc, char** argv)
 				al_acknowledge_resize(pal_display);
 			}
 
-			if (map_scrolled == 0 || pal_scrolled == 0)
+			if (map_scrolled == 0 || pal_scrolled == 0 || !eyedropper_animations.empty())
 			{
 				timer.Start();
 			}
@@ -1348,15 +1339,15 @@ int main(int argc, char** argv)
 						map_renderer.target.Blit(cursor, mouse_draw_x, mouse_draw_y);
 					}
 
-					for (std::unique_ptr<EyedropperAnimation>& animation : eyedropper_animations)
+					for (EyedropperAnimation& animation : eyedropper_animations)
 					{
-						int mouse_draw_x = (animation->x << 5) - (animation->y << 5) - map_renderer.xoff;
-						int mouse_draw_y = (animation->x << 4) + (animation->y << 4) - map_renderer.yoff;
+						int mouse_draw_x = (animation.x << 5) - (animation.y << 5) - map_renderer.xoff;
+						int mouse_draw_y = (animation.x << 4) + (animation.y << 4) - map_renderer.yoff;
 						map_renderer.target.Blit(
 							eyedropper,
 							mouse_draw_x,
 							mouse_draw_y,
-							a5::Rectangle(animation->frame * 64, 0, (animation->frame + 1) * 64, 32)
+							a5::Rectangle(animation.frame * 64, 0, (animation.frame + 1) * 64, 32)
 						);
 					}
 
@@ -1447,7 +1438,7 @@ int main(int argc, char** argv)
 				a5::disable_auto_target = false;
 			}
 
-			if (map_scrolled < 0 && pal_scrolled < 0)
+			if (map_scrolled < 0 && pal_scrolled < 0 && eyedropper_animations.empty())
 			{
 				timer.Stop();
 			}
